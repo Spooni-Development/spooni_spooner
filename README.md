@@ -1,4 +1,5 @@
 # 💻 Spooner
+Documentation relating to the spooni_spooner.
 
 ## 1. Installation
 spooni_spooner works Standalone. 
@@ -8,26 +9,33 @@ To install spooni_spooner:
   - On [Github](https://github.com/Spooni-Development/spooni_spooner)
 - Ensure that all requirements are installed
   - [uiprompt](https://github.com/kibook/redm-uiprompt)
+- Add the exec to the server.cg
+  ```
+    exec @spooni_spooner/permissions.cfg
+  ```
 - Add the permissions
     ```
-    add_ace builtin.everyone spooner.view allow
-    add_ace builtin.everyone spooner.spawn allow
-    add_ace builtin.everyone spooner.modify.own allow
-    add_ace builtin.everyone spooner.delete.own allow
-    add_ace builtin.everyone spooner.properties allow
+    add_ace builtin.everyone spooni_spooner.view allow
+    add_ace builtin.everyone spooni_spooner.spawn allow
+    add_ace builtin.everyone spooni_spooner.modify.own allow
+    add_ace builtin.everyone spooni_spooner.delete.own allow
+    add_ace builtin.everyone spooni_spooner.properties allow
 
-    add_ace group.admin spooner.noEntityLimit allow
-    add_ace group.admin spooner.modify.other allow
-    add_ace group.admin spooner.delete.other allow
+    add_ace builtin.everyone spooner.noEntityLimit allow
+    add_ace builtin.everyone spooner.modify.other allow
+    add_ace builtin.everyonespooner.delete.other allow
     ```
 - Drag and drop the resource into your resources folder
   - `spooni_spooner`
 - Add this ensure in your server.cfg
   - `ensure spooni_spooner`
+- At the end
+  - Restart the server
 
 If you have any problems, you can always open a ticket in the Spooni Discord.
 
 ## 2. Usage
+:::details Usage
 ## Cursor colours
 
 | Colour | Meaning            |
@@ -115,6 +123,7 @@ To export, select the desired format and click **Export**. The output will be di
 To import, paste the input into the text box, select the appropriate format, and click **Import**. Objects imported will be added to your current database.
 
 Entering a URL of a JSON/XML file in the **Import from URL** field and clicking **Import** allows you to import from external web sources, such as pastebin.com, without needing to copy and paste. Be sure that the URL points to the raw version of the file when using such services.
+:::
 
 ## 3. Credits
 
