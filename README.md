@@ -23,7 +23,7 @@ To install spooni_spooner:
 
     add_ace builtin.everyone spooner.noEntityLimit allow
     add_ace builtin.everyone spooner.modify.other allow
-    add_ace builtin.everyonespooner.delete.other allow
+    add_ace builtin.everyone spooner.delete.other allow
     ```
 - Drag and drop the resource into your resources folder
   - `spooni_spooner`
