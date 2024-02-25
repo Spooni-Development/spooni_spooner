@@ -7,6 +7,8 @@ spooni_spooner works Standalone.
 To install spooni_spooner:
 - Download the resource
   - On [Github](https://github.com/Spooni-Development/spooni_spooner)
+- Drag and drop the resource into your resources folder
+  - `spooni_spooner`
 - Ensure that all requirements are installed
   - [uiprompt](https://github.com/kibook/redm-uiprompt)
 - Add the exec to the server.cfg
