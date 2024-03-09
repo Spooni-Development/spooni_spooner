@@ -1,11 +1,10 @@
-fx_version "cerulean"
-game 'rdr3'
+fx_version "adamant"
 rdr3_warning "I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships."
+game "rdr3"
+lua54 "yes"
 
-name "spooni_spooner"
-author "i3ucky"
+author "Spooni"
 description "Reworked Entity spawner for RedM"
-repository "https://github.com/i3ucky/spooni_spooner"
 
 files {
 	"ui/index.html",
@@ -17,7 +16,8 @@ files {
 ui_page "ui/index.html"
 
 server_scripts {
-	"server.lua"
+	"server.lua",
+	"version.lua",
 }
 
 client_scripts {
