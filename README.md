@@ -32,7 +32,7 @@ To install spooni_spooner:
 - At the end
   - Restart the server
 
-If you have any problems, you can always open a ticket in the Spooni Discord.
+If you have any problems, you can always open a ticket in the [Spooni Discord](https://discord.gg/spooni).
 
 ## 2. Usage
 ## Cursor colours
