@@ -9,7 +9,7 @@ To install spooni_spooner:
   - On [Github](https://github.com/Spooni-Development/spooni_spooner)
 - Ensure that all requirements are installed
   - [uiprompt](https://github.com/kibook/redm-uiprompt)
-- Add the exec to the server.cfg
+- Add the permissions' exec to the server.cfg
   ```
     exec @spooni_spooner/permissions.cfg
   ```
