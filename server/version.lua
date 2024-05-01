@@ -1,6 +1,6 @@
 local CurrentIP = "None"
 local rs = GetCurrentResourceName()
-local version = 2
+local version = 3
 
 Citizen.CreateThread(function()
     PerformHttpRequest("https://raw.githubusercontent.com/Spooni-Development/spooni_updates/main/scripts/spooni_spooner.json", function(err, text, headers)

@@ -14,7 +14,8 @@
 	background-color: #d00;
 }
 
-html, body {
+html,
+body {
 	background: none;
 	width: 100%;
 	height: 100%;
@@ -29,9 +30,73 @@ button {
 	color: white;
 	border: solid 1px white;
 	font-size: 2vh;
+	border-radius: 10px;
 }
 
-button:hover:enabled, button:focus:enabled {
+#copy-position,
+#copy-rotation,
+#properties-adjust-speed,
+#properties-rotate-speed,
+#ped-spawn-by-name,
+#vehicle-spawn-by-name,
+#object-spawn-by-name,
+#propset-spawn-by-name,
+#pickup-spawn-by-name,
+#spooni-spawn-by-name,
+#import-export-db-btn,
+#add-to-db-btn {
+	border-radius: 10px 10px 0 0;
+}
+
+#export-db {
+	border-radius: 0 10px 0 0;
+}
+
+#import-export-db-close,
+#ped-menu-close-btn,
+#vehicle-menu-close-btn,
+#object-menu-close-btn,
+#propset-menu-close-btn,
+#pickup-menu-close-btn,
+#spooni-menu-close-btn,
+#save-load-db-menu-close-btn,
+#object-database-close-btn {
+	border-radius: 0 0 10px 10px;
+}
+
+#import-db,
+#properties-x,
+#properties-y,
+#properties-z,
+#properties-pitch,
+#properties-roll,
+#properties-yaw,
+#object-database-delete-all-btn {
+	border-radius: 0;
+}
+
+#properties-adjust-speed,
+#properties-rotate-speed {
+	border-radius: 10px 10px 0 0;
+}
+
+#copy-position,
+#copy-rotation {
+	border-radius: 0 0 10px 10px;
+}
+
+#favourite-peds,
+#favourite-vehicles,
+#favourite-objects,
+#favourite-propsets,
+#favourite-pickups,
+#favourite-spooni,
+#copy-model-name {
+	border: solid 1px black;
+}
+
+button:hover:enabled,
+button:focus:enabled {
 	background-color: rgba(255, 0, 0, 0.5);
 }
 
@@ -58,6 +123,7 @@ input[type="checkbox"] {
 	width: 1vw;
 	border: 1px solid white;
 	vertical-align: middle;
+	border-radius: 5px;
 }
 
 input[type="checkbox"]:checked {
@@ -114,10 +180,12 @@ input:disabled {
 	font-size: 1.25vh;
 	padding: 0.25vh 0.25vw;
 	margin-top: 1vh;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.75);
+	border-radius: 10px 10px 0 0;
 }
 
-.control-set, .control-and-help {
+.control-set,
+.control-and-help {
 	display: flex;
 	align-items: center;
 }
@@ -145,17 +213,18 @@ input:disabled {
 .menu {
 	display: none;
 	position: absolute;
-	top: 50%;
+	top: 48%;
 	right: 1%;
-	height: 95%;
+	height: 93%;
 	transform: translate(0, -50%);
-	background-color: rgba(0, 0, 0, 0.9);
+	background-color: rgba(0, 0, 0, 0.75);
 	color: white;
 	font-size: 1.9vh;
 	padding: 0.5vh 0.5vw;
 	flex-flow: column;
 	min-width: 10%;
 	overflow: auto;
+	border-radius: 10px;
 }
 
 #spawn-categories {
@@ -182,6 +251,7 @@ input:disabled {
 	border: solid 1px white;
 	background-color: rgba(0, 0, 0, 0.5);
 	color: white;
+	border-radius: 10px;
 }
 
 .list {
@@ -192,10 +262,12 @@ input:disabled {
 
 ::-webkit-scrollbar {
 	background: black;
+	border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
 	background-color: white;
+	border-radius: 10px;
 }
 
 .object {
@@ -205,6 +277,7 @@ input:disabled {
 .object:hover {
 	background-color: white;
 	color: black;
+	border-radius: 10px;
 }
 
 .object.selected {
@@ -216,8 +289,8 @@ input:disabled {
 	background-color: rgba(255, 215, 0, 0.5);
 }
 
-.object-name, .object-favourite {
-}
+.object-name,
+.object-favourite {}
 
 .self {
 	background-color: rgba(0, 0, 255, 0.3);
@@ -227,7 +300,8 @@ input:disabled {
 	background-color: rgba(255, 0, 0, 0.3);
 }
 
-#properties-menu .label, #properties-menu .value {
+#properties-menu .label,
+#properties-menu .value {
 	display: inline;
 }
 
@@ -246,6 +320,7 @@ input:disabled {
 
 .property.multiple {
 	display: flex;
+	gap: 2%;
 }
 
 .property label {
@@ -261,13 +336,15 @@ input:disabled {
 .property input {
 	display: block;
 	width: 100%;
+	border-radius: 10px;
 }
 
 .add-remove-db {
 	display: none;
 }
 
-#load-db-options, #save-db-options {
+#load-db-options,
+#save-db-options {
 	padding: 1vh 0;
 }
 
@@ -277,6 +354,11 @@ input:disabled {
 
 #save-db-name {
 	flex-grow: 1;
+	border-radius: 5px 0 0 5px;
+}
+
+#save-db-btn {
+	border-radius: 0 5px 5px 0;
 }
 
 .database {
@@ -286,6 +368,7 @@ input:disabled {
 .database:hover {
 	background-color: white;
 	color: black;
+	border-radius: 10px;
 }
 
 #help-menu {
@@ -300,6 +383,7 @@ input:disabled {
 	padding: 1vh 1vw;
 	font-size: 1.5vh;
 	max-height: 95%;
+	border-radius: 10px;
 }
 
 #help-content {
@@ -359,8 +443,8 @@ strong {
 	transform: translate(-50%, -50%);
 	width: 50%;
 	height: 50%;
-	background: rgba(0, 0, 0, 0.5);
 	color: white;
+	border-radius: 10px;
 }
 
 #import-export-controls {
@@ -372,6 +456,7 @@ select {
 	background: rgba(0, 0, 0, 0.5);
 	color: white;
 	border: solid 1px white;
+	border-radius: 5px 0 0 0;
 }
 
 option {
