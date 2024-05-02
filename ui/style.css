@@ -114,6 +114,7 @@ input {
 	background-color: rgba(0, 0, 0, 0.5);
 	color: white;
 	border: solid 1px white;
+	border-radius: 10px;
 }
 
 input[type="checkbox"] {
