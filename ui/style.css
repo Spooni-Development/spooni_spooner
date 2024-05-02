@@ -40,10 +40,16 @@ button {
 #ped-spawn-by-name,
 #vehicle-spawn-by-name,
 #object-spawn-by-name,
+#animation-stop,
 #propset-spawn-by-name,
 #pickup-spawn-by-name,
 #spooni-spawn-by-name,
+#player-model-spawn-by-name,
+#scenario-stop,
+#attachment-adjust-speed,
+#attachment-rotate-speed,
 #import-export-db-btn,
+#yes-delete-db,
 #add-to-db-btn {
 	border-radius: 10px 10px 0 0;
 }
@@ -59,8 +65,14 @@ button {
 #propset-menu-close-btn,
 #pickup-menu-close-btn,
 #spooni-menu-close-btn,
+#animation-menu-close,
 #save-load-db-menu-close-btn,
-#object-database-close-btn {
+#object-database-close-btn,
+#scenario-menu-close,
+#copy-attachment-position,
+#player-model-menu-close-btn,
+#no-delete-db,
+#copy-attachment-rotation {
 	border-radius: 0 0 10px 10px;
 }
 
@@ -71,6 +83,12 @@ button {
 #properties-pitch,
 #properties-roll,
 #properties-yaw,
+#attachment-x,
+#attachment-y,
+#attachment-z,
+#attachment-pitch,
+#attachment-roll,
+#attachment-yaw,
 #object-database-delete-all-btn {
 	border-radius: 0;
 }
@@ -86,11 +104,16 @@ button {
 }
 
 #favourite-peds,
+#favourite-scenarios,
 #favourite-vehicles,
+#favourite-animations,
 #favourite-objects,
 #favourite-propsets,
+#favourite-player-models,
 #favourite-pickups,
 #favourite-spooni,
+#favourite-weapons,
+#favourite-walk-styles,
 #copy-model-name {
 	border: solid 1px black;
 }
@@ -265,7 +288,7 @@ input:disabled {
 	background: black;
 	border-radius: 10px;
 }
-
+  
 ::-webkit-scrollbar-thumb {
 	background-color: white;
 	border-radius: 10px;
@@ -291,7 +314,8 @@ input:disabled {
 }
 
 .object-name,
-.object-favourite {}
+.object-favourite {
+}
 
 .self {
 	background-color: rgba(0, 0, 255, 0.3);
@@ -460,12 +484,17 @@ select {
 	border-radius: 5px 0 0 0;
 }
 
+#attachment-bone-name {
+	border-radius: 10px;
+}
+
 option {
 	background-color: #000;
 }
 
 #import-url {
 	flex-grow: 1;
+	border-radius: 0px;
 }
 
 textarea {
@@ -482,6 +511,7 @@ textarea {
 
 #attachment-bone-container {
 	display: flex;
+	gap: 10px;
 }
 
 .labelled-input-group {
