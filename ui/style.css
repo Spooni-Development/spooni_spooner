@@ -21,7 +21,7 @@ body {
 	height: 100%;
 	padding: 0;
 	margin: 0;
-	overflow: hidden;
+	overflow: auto;
 	font-family: Helvetica;
 }
 
@@ -50,6 +50,7 @@ button {
 #attachment-rotate-speed,
 #import-export-db-btn,
 #yes-delete-db,
+#properties-lights-red,
 #add-to-db-btn {
 	border-radius: 10px 10px 0 0;
 }
@@ -72,6 +73,7 @@ button {
 #copy-attachment-position,
 #player-model-menu-close-btn,
 #no-delete-db,
+#properties-lights-blue,
 #copy-attachment-rotation {
 	border-radius: 0 0 10px 10px;
 }
@@ -89,6 +91,7 @@ button {
 #attachment-pitch,
 #attachment-roll,
 #attachment-yaw,
+#properties-lights-green,
 #object-database-delete-all-btn {
 	border-radius: 0;
 }
