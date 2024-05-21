@@ -11,7 +11,7 @@ To install spooni_spooner:
   - [uiprompt](https://github.com/kibook/redm-uiprompt)
 - Add the permissions' exec to the server.cfg
   ```
-    exec @spooni_spooner/permissions.cfg
+  exec @spooni_spooner/permissions.cfg
   ```
 - Drag and drop the resource into your resources folder
   - `spooni_spooner`
