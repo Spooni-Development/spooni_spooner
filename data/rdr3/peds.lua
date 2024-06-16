@@ -1983,5 +1983,4 @@ Peds = {
 	"western_saddle_04",
 }
 
-PedsHashLookup = {}
-for _, name in ipairs(Peds) do PedsHashLookup[GetHashKey(name)] = name; end
+PedsHashLookup = GetIndexedHashList(Peds)

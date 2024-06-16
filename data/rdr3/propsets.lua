@@ -897,3 +897,5 @@ Propsets = {
 	"pg_wilderchest02x",
 	"pg_wilderchest03x"
 }
+
+PropsetsHashLookup = GetIndexedHashList(Propsets)

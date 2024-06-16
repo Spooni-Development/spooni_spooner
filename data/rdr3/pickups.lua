@@ -147,5 +147,5 @@ Pickups = {
 	"PICKUP_WEAPON_THROWN_TOMAHAWK_IMPROVED",
 	"PICKUP_WEAPON_THROWN_TOMAHAWK_MP",
 }
-PickupsHashLookup = {}
-for _, name in ipairs(Pickups) do PickupsHashLookup[GetHashKey(name)] = name; end
+
+PickupsHashLookup = GetIndexedHashList(Pickups)

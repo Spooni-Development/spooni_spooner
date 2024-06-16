@@ -17025,5 +17025,4 @@ Objects = {
 	"wand",
 }
 
-ObjectsHashLookup = {}
-for _, name in ipairs(Objects) do ObjectsHashLookup[GetHashKey(name)] = name; end
+ObjectsHashLookup = GetIndexedHashList(Objects)
