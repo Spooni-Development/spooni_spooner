@@ -986,7 +986,16 @@ function RequestControl(entity)
 		return
 	end
 
-	NetworkRequestControlOfEntity(entity)
+	if DoesEntityExist(entity) and not NetworkHasControlOfEntity(entity) then
+		NetworkRequestControlOfEntity(entity)
+
+		local t = 100
+
+		while not NetworkHasControlOfEntity(entity) and t > 0 do 
+			Wait(0)
+			t = t - 1
+		end
+	end
 end
 
 function CanDeleteEntity(entity)
@@ -2805,7 +2814,7 @@ function TryClonePed(handle)
 	if Permissions.properties.ped.clone and CanModifyEntity(handle) then
 		RequestControl(handle)
 		local clone = CloneEntity(handle)
-		Citizen.Wait(500)
+		Wait(500)
 		ClonePedToTarget(handle, clone)
 	end
 end
@@ -3009,7 +3018,7 @@ function MainSpoonerUpdates()
         if MessageInterval then
             MessageInterval = false
             CreateThread(function()
-                Citizen.Wait(MessageRate)
+                Wait(MessageRate)
                 MessageInterval = true
             end)
 			SendNUIMessage({
