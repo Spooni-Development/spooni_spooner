@@ -327,38 +327,6 @@ function GetInView(x1, y1, z1, pitch, roll, yaw)
 end
 
 function GetModelName(model)
-	for _, name in ipairs(Peds) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	for _, name in ipairs(Vehicles) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	for _, name in ipairs(Objects) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-	for _, name in ipairs(Spooni) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-	for _, name in ipairs(Pickups) do
-		if model == GetHashKey(name) then
-			return name
-		end
-	end
-
-	return tostring(model)
-end
-
-function GetModelName(model)
 	if PedsHashLookup[model] then
         return PedsHashLookup[model]
     end
@@ -787,7 +755,7 @@ function SpawnVehicle(name, model, x, y, z, pitch, roll, yaw, collisionDisabled,
 	end
 
 	-- Weird fix for the hot air balloon, otherwise it doesn't move with the wind and only travels straight up.
-	if model == GetHashKey('hotairballoon01') then
+	if model == joaat('hotairballoon01') then
 		SetVehicleAsNoLongerNeeded(veh)
 	end
 
@@ -820,7 +788,7 @@ end
 
 local function startScenario(ped, scenario)
 	if Config.isRDR then
-		TaskStartScenarioInPlace(ped, GetHashKey(scenario), -1)
+		TaskStartScenarioInPlace(ped, joaat(scenario), -1)
 	else
 		TaskStartScenarioInPlace(ped, scenario, -1)
 	end
@@ -889,9 +857,9 @@ function SpawnPed(props)
 	if props.weapons then
 		for _, weapon in ipairs(props.weapons) do
 			if Config.isRDR then
-				GiveWeaponToPed_2(ped, GetHashKey(weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
+				GiveWeaponToPed_2(ped, joaat(weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
 			else
-				GiveWeaponToPed(ped, GetHashKey(weapon), 500, false, true)
+				GiveWeaponToPed(ped, joaat(weapon), 500, false, true)
 			end
 		end
 	end
@@ -1018,7 +986,16 @@ function RequestControl(entity)
 		return
 	end
 
-	NetworkRequestControlOfEntity(entity)
+	if DoesEntityExist(entity) and not NetworkHasControlOfEntity(entity) then
+		NetworkRequestControlOfEntity(entity)
+
+		local t = 100
+
+		while not NetworkHasControlOfEntity(entity) and t > 0 do 
+			Wait(0)
+			t = t - 1
+		end
+	end
 end
 
 function CanDeleteEntity(entity)
@@ -1109,17 +1086,8 @@ RegisterNUICallback('closeSpawnMenu', function(data, cb)
 	cb({})
 end)
 
-function Contains(list, item)
-	for _, value in ipairs(list) do
-		if value == item then
-			return true
-		end
-	end
-	return false
-end
-
 RegisterNUICallback('closePedMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Peds, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PedsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 1
@@ -1130,7 +1098,7 @@ RegisterNUICallback('closePedMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeVehicleMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Vehicles, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or VehiclesHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 2
@@ -1141,7 +1109,7 @@ RegisterNUICallback('closeVehicleMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeObjectMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Objects, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or ObjectsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 3
@@ -1152,7 +1120,7 @@ RegisterNUICallback('closeObjectMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closeSpooniMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Spooni, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or SpooniHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 3
@@ -1163,7 +1131,7 @@ RegisterNUICallback('closeSpooniMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closePropsetMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Propsets, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PropsetsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 4
@@ -1174,7 +1142,7 @@ RegisterNUICallback('closePropsetMenu', function(data, cb)
 end)
 
 RegisterNUICallback('closePickupMenu', function(data, cb)
-	if data.modelName and (Permissions.spawn.byName or Contains(Pickups, data.modelName)) then
+	if data.modelName and (Permissions.spawn.byName or PickupsHashLookup[joaat(data.modelName)]) then
 		CurrentSpawn = {
 			modelName = data.modelName,
 			type = 5
@@ -2167,7 +2135,7 @@ local function loadOffset(file)
 	for index, value in ipairs(data) do
 		db[#db+1] = {
 			name = value.model,
-			model = GetHashKey(value.model),
+			model = joaat(value.model),
 			isFrozen = value.isFrozen,
 			x = value.offset.x+coords.x,
 			y = value.offset.y+coords.y,
@@ -2233,7 +2201,7 @@ local function loadYmap(xml)
 			if isEntity then
 				if curElem == "archetypeName" then
 					db[key].name = text
-					db[key].model = GetHashKey(text)
+					db[key].model = joaat(text)
 				end
 			end
 		end
@@ -2533,9 +2501,9 @@ RegisterNUICallback('giveWeapon', function(data, cb)
 		RequestControl(data.handle)
 
 		if Config.isRDR then
-			GiveWeaponToPed_2(data.handle, GetHashKey(data.weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
+			GiveWeaponToPed_2(data.handle, joaat(data.weapon), 500, true, false, 0, false, 0.5, 1.0, 0, false, 0.0, false)
 		else
-			GiveWeaponToPed(data.handle, GetHashKey(data.weapon), 500, false, true)
+			GiveWeaponToPed(data.handle, joaat(data.weapon), 500, false, true)
 		end
 
 		if Database[data.handle] then
@@ -2683,7 +2651,7 @@ end)
 
 RegisterNUICallback('setPlayerModel', function(data, cb)
 	if Permissions.properties.ped.changeModel and data.modelName then
-		local model = GetHashKey(data.modelName)
+		local model = joaat(data.modelName)
 
 		if LoadModel(model) then
 			SetPlayerModel(PlayerId(), model, true)
@@ -2846,7 +2814,7 @@ function TryClonePed(handle)
 	if Permissions.properties.ped.clone and CanModifyEntity(handle) then
 		RequestControl(handle)
 		local clone = CloneEntity(handle)
-		Citizen.Wait(500)
+		Wait(500)
 		ClonePedToTarget(handle, clone)
 	end
 end
@@ -3049,8 +3017,8 @@ function MainSpoonerUpdates()
 
         if MessageInterval then
             MessageInterval = false
-            Citizen.CreateThread(function()
-                Citizen.Wait(MessageRate)
+            CreateThread(function()
+                Wait(MessageRate)
                 MessageInterval = true
             end)
 			SendNUIMessage({
@@ -3168,7 +3136,7 @@ function MainSpoonerUpdates()
 			if CurrentSpawn.type == 1 then
 				entity = SpawnPed{
 					name = CurrentSpawn.modelName,
-					model = GetHashKey(CurrentSpawn.modelName),
+					model = joaat(CurrentSpawn.modelName),
 					x = spawnPos.x,
 					y = spawnPos.y,
 					z = spawnPos.z,
@@ -3183,15 +3151,15 @@ function MainSpoonerUpdates()
 				}
 
 			elseif CurrentSpawn.type == 2 then
-				entity = SpawnVehicle(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true)
+				entity = SpawnVehicle(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnObject(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnObject(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			elseif CurrentSpawn.type == 4 then
-				entity = SpawnPropset(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, yaw2)
+				entity = SpawnPropset(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, yaw2)
 			elseif CurrentSpawn.type == 5 then
-				entity = SpawnPickup(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z)
+				entity = SpawnPickup(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnSpooni(CurrentSpawn.modelName, GetHashKey(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnSpooni(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			end
 
 			if entity then
@@ -3620,7 +3588,7 @@ function UpdateDbEntities()
 		end
 
 		if properties.scenario then
-			local hash = GetHashKey(properties.scenario)
+			local hash = joaat(properties.scenario)
 
 			if not IsPedUsingScenarioHash(entity, hash) then
 				startScenario(entity, properties.scenario)
@@ -3706,7 +3674,7 @@ function IsPromptCompleted(group,key)
       return true
     end
   else
-    if IsControlJustPressed(0,GetHashKey(key)) then
+    if IsControlJustPressed(0,joaat(key)) then
       Wait(0)
       return true
     end
@@ -3723,7 +3691,7 @@ function CreatePromptButton(group, str, key, holdTime)
     }
   end
   promptGroups[group].prompts[key] = PromptRegisterBegin()
-  PromptSetControlAction(promptGroups[group].prompts[key], GetHashKey(key))
+  PromptSetControlAction(promptGroups[group].prompts[key], joaat(key))
   str = CreateVarString(10, 'LITERAL_STRING', str)
   PromptSetText(promptGroups[group].prompts[key], str)
   PromptSetEnabled(promptGroups[group].prompts[key], true)
@@ -3809,7 +3777,7 @@ function CreateObjects(data, flag, distance)
     local callback = promise.new()
     local previousCoord = Origin
 
-    Citizen.CreateThread(function()
+    CreateThread(function()
         while true do
             Wait(loopFast)
 
@@ -3897,4 +3865,14 @@ function RotateObject(_coord,_center,_angle)
       (_coord.x - _center.x) * math.cos(_angle) - (_coord.y - _center.y) * math.sin(_angle) + _center.x,
       (_coord.x - _center.x) * math.sin(_angle) + (_coord.y - _center.y) * math.cos(_angle) + _center.y
     )
+end
+
+function GetIndexedHashList(List)
+    local NewList = {}
+
+    for _, v in ipairs(List) do
+        NewList[joaat(v)] = v
+    end
+
+    return NewList
 end
