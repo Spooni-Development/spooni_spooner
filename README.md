@@ -1,5 +1,5 @@
 # 💻 Spooner
-Documentation relating to the spooni_spooner.
+Documentation relating to the [spooni_spooner](https://github.com/Spooni-Development/spooni_spooner).
 
 ## 1. Installation
 spooni_spooner works Standalone. 
@@ -21,15 +21,15 @@ To install spooni_spooner:
   ```
 - Or define the permission yourself
   ```
-  add_ace group.admin spooni_spooner.view allow
-  add_ace group.admin spooni_spooner.spawn allow
-  add_ace group.admin spooni_spooner.modify.own allow
-  add_ace group.admin spooni_spooner.delete.own allow
-  add_ace group.admin spooni_spooner.properties allow
+  add_ace group.admin spooner.view allow
+  add_ace group.admin spooner.spawn allow
+  add_ace group.admin spooner.modify.own allow
+  add_ace group.admin spooner.delete.own allow
+  add_ace group.admin spooner.properties allow
 
-  add_ace group.admin spooni_spooner.noEntityLimit allow
-  add_ace group.admin spooni_spooner.modify.other allow
-  add_ace group.admin spooni_spooner.delete.other allow
+  add_ace group.admin spooner.noEntityLimit allow
+  add_ace group.admin spooner.modify.other allow
+  add_ace group.admin spooner.delete.other allow
   ```
 - At the end
   - Restart the server
@@ -37,6 +37,7 @@ To install spooni_spooner:
 If you have any problems, you can always open a ticket in the [Spooni Discord](https://discord.gg/spooni).
 
 ## 2. Usage
+:::details Usage
 ## Cursor colours
 
 | Colour | Meaning            |
@@ -124,6 +125,7 @@ To export, select the desired format and click **Export**. The output will be di
 To import, paste the input into the text box, select the appropriate format, and click **Import**. Objects imported will be added to your current database.
 
 Entering a URL of a JSON/XML file in the **Import from URL** field and clicking **Import** allows you to import from external web sources, such as pastebin.com, without needing to copy and paste. Be sure that the URL points to the raw version of the file when using such services.
+:::
 
 ## 3. Credits
 
