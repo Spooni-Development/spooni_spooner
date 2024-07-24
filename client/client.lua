@@ -1591,9 +1591,10 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement)
 			local x = spawn.props.quaternion.x
 			local y = spawn.props.quaternion.y
 			local z = spawn.props.quaternion.z
-			local w = -spawn.props.quaternion.w
+			local w
+			if spawn.props.quaternion.w ~= nil then w = spawn.props.quaternion.w  SetEntityQuaternion(handles[spawn.entity], x, y, z, -w) else w = nil end
 
-			SetEntityQuaternion(handles[spawn.entity], x, y, z, w)
+			
 		end
 
 		if spawn.props.attachment and spawn.props.attachment.to ~= 0 then
@@ -2212,6 +2213,129 @@ local function loadYmap(xml)
 	LoadDatabase(db, false, false)
 end
 
+local function loadXml(xml)
+    local curElem, isEntity
+
+    local db = {spawn = {}, delete = {}}
+    local i = 0
+    local key = "0"
+
+    local parser = SLAXML:parser {
+        startElement = function(name, nsURI, nsPrefix)
+            curElem = name
+        end,
+        attribute = function(name, value, nsURI, nsPrefix)
+            if curElem == "DeletedObject" then
+                if not db.delete[key] then
+                    db.delete[key] = {
+						quaternion = {},
+                        x = 0.0,
+                        y = 0.0,
+                        z = 0.0,
+                        pitch = 0.0,
+                        roll = 0.0,
+                        yaw = 0.0
+                    }
+                end
+				if name == "Position_x" then
+                    db.delete[key].x = tonumber(value) or 0.0
+                elseif name == "Position_y" then
+                    db.delete[key].y = tonumber(value) or 0.0
+                elseif name == "Position_z" then
+                    db.delete[key].z = tonumber(value) or 0.0
+                elseif name == "Rotation_x" then
+                    db.delete[key].pitch = tonumber(value) or 0.0
+                elseif name == "Rotation_y" then
+                    db.delete[key].roll = tonumber(value) or 0.0
+                elseif name == "Rotation_z" then
+                    db.delete[key].yaw = tonumber(value) or 0.0
+                elseif name == "Rotation_w" then
+                    db.delete[key].quaternion.w = tonumber(value) or 0.0
+                elseif name == "Rotation_qx" then
+                    db.delete[key].quaternion.x = tonumber(value) or 0.0
+                elseif name == "Rotation_qy" then
+                    db.delete[key].quaternion.y = tonumber(value) or 0.0
+                elseif name == "Rotation_qz" then
+                    db.delete[key].quaternion.z = tonumber(value) or 0.0
+                elseif name == "Hash" then
+                    db.delete[key].model = tonumber(value) or joaat(value)
+                elseif name == "Collision" then
+                    db.delete[key].collisionDisabled = value == "false"
+                elseif name == "Visible" then
+                    db.delete[key].isVisible = value == "true"
+                end
+                db.delete[key][name] = tonumber(value) or value
+            elseif curElem == "Object" then
+                if not db.spawn[key] then
+                    db.spawn[key] = {
+                        quaternion = {},
+                        x = 0.0,
+                        y = 0.0,
+                        z = 0.0,
+                        pitch = 0.0,
+                        roll = 0.0,
+                        yaw = 0.0
+                    }
+                end
+                if name == "Position_x" then
+                    db.spawn[key].x = tonumber(value) or 0.0
+                elseif name == "Position_y" then
+                    db.spawn[key].y = tonumber(value) or 0.0
+                elseif name == "Position_z" then
+                    db.spawn[key].z = tonumber(value) or 0.0
+                elseif name == "Rotation_x" then
+                    db.spawn[key].pitch = tonumber(value) or 0.0
+                elseif name == "Rotation_y" then
+                    db.spawn[key].roll = tonumber(value) or 0.0
+                elseif name == "Rotation_z" then
+                    db.spawn[key].yaw = tonumber(value) or 0.0
+                elseif name == "Rotation_w" then
+                    db.spawn[key].quaternion.w = tonumber(value) or 0.0
+                elseif name == "Rotation_qx" then
+                    db.spawn[key].quaternion.x = tonumber(value) or 0.0
+                elseif name == "Rotation_qy" then
+                    db.spawn[key].quaternion.y = tonumber(value) or 0.0
+                elseif name == "Rotation_qz" then
+                    db.spawn[key].quaternion.z = tonumber(value) or 0.0
+                elseif name == "Hash" then
+                    db.spawn[key].model = tonumber(value) or joaat(value)
+                elseif name == "Collision" then
+                    db.spawn[key].collisionDisabled = value == "false"
+                elseif name == "Visible" then
+                    db.spawn[key].isVisible = value == "true"
+                end
+            end
+        end,
+        closeElement = function(name, nsURI)
+            if name == "DeletedObject" then
+                i = i + 1
+                key = tostring(i)
+            elseif name == "Object" then
+                i = i + 1
+                key = tostring(i)
+            end
+            curElem = nil
+        end,
+        text = function(text, cdata)
+        end
+    }
+
+    parser:parse(xml, {stripWhitespace=true})
+
+    for key, props in pairs(db.delete) do
+        local x, y, z = props.x, props.y, props.z
+        local model = props.model
+        local closestObject = GetClosestObjectOfType(x, y, z, 1.0, model, false, false, false)
+        if DoesEntityExist(closestObject) then
+            DeleteEntity(closestObject)
+        end
+    end
+
+    LoadDatabase(db, false, false)
+end
+
+
+
 function ExportDatabase(format)
 	UpdateDatabase()
 
@@ -2247,6 +2371,8 @@ function ImportDatabase(format, content)
 		RestoreDbs(content)
 	elseif format == 'ymap' then
 		loadYmap(content)
+	elseif format == 'map-editor-xml' then
+		loadXml(content)
 	elseif format == 'offset' then
 		loadOffset(content)
 	end
@@ -2257,6 +2383,7 @@ RegisterNUICallback('exportDb', function(data, cb)
 end)
 
 RegisterNUICallback('importDb', function(data, cb)
+	print(data.format)
 	ImportDatabase(data.format, data.content)
 	cb({})
 end)
