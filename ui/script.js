@@ -2538,7 +2538,7 @@ window.addEventListener('load', function() {
 				importButton.disabled = false;
 				break;
 			case 'map-editor-xml':
-				importButton.disabled = true;
+				importButton.disabled = false;
 				break;
 			case 'script':
 				importButton.disabled = true;
