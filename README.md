@@ -37,7 +37,6 @@ To install spooni_spooner:
 If you have any problems, you can always open a ticket in the [Spooni Discord](https://discord.gg/spooni).
 
 ## 2. Usage
-:::details Usage
 ## Cursor colours
 
 | Colour | Meaning            |
@@ -125,7 +124,6 @@ To export, select the desired format and click **Export**. The output will be di
 To import, paste the input into the text box, select the appropriate format, and click **Import**. Objects imported will be added to your current database.
 
 Entering a URL of a JSON/XML file in the **Import from URL** field and clicking **Import** allows you to import from external web sources, such as pastebin.com, without needing to copy and paste. Be sure that the URL points to the raw version of the file when using such services.
-:::
 
 ## 3. Credits
 
