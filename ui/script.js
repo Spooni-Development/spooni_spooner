@@ -167,7 +167,6 @@ function updateSpoonerHud(data) {
 	document.getElementById('cursor-x').innerHTML = data.cursorX;
 	document.getElementById('cursor-y').innerHTML = data.cursorY;
 	document.getElementById('cursor-z').innerHTML = data.cursorZ;
-// Ensure these are updated with the rotation data
 	document.getElementById('cam-rot-x').innerHTML = data.camrotX;
 	document.getElementById('cam-rot-y').innerHTML = data.camrotY;
 	document.getElementById('cam-rot-z').innerHTML = data.camrotZ;
@@ -2658,12 +2657,7 @@ window.addEventListener('load', function() {
 		var rx = document.getElementById('cam-rot-x').innerText
 		var ry = document.getElementById('cam-rot-y').innerText
 		var rz = document.getElementById('cam-rot-z').innerText 
-	
-		// Log values for debugging
-		console.log('Camera Coordinates:', x, y, z);
-		console.log('Rotation Coordinates:', rx, ry, rz);
-	
-		// Copy to clipboard
+
 		copyToClipboard(x + ', ' + y + ', ' + z + ' - Rot: ' + rx + ', ' + ry + ', ' + rz);
 	});
 
