@@ -199,7 +199,8 @@ Spooni = {
 	"house29",
 	"house30",
 	"house30_2",
-	"house31",
+	"house31_int",
+	"house31_ext",
 	"house32",
 	"house33",
 	"house34",
@@ -236,6 +237,14 @@ Spooni = {
 	"int3",
 	"int4",
 	"int5",
+	"instancemansion1a",
+	"instancemansion1b",
+	"instancemansion1c",
+	"instancemansion2a",
+	"instancemansion2b",
+	"instancemansion3a",
+	"instancemansion3b",
+	"instancemansion3c",
 	"jail1",
 	"kamin",
 	"kamin1",
@@ -495,6 +504,8 @@ Spooni = {
 	"store2-1",
 	"store2-2",
 	"store3",
+	"store3-1",
+	"store3-2",
 	"store4",
 	"store5_1",
 	"store5_2",
@@ -623,5 +634,5 @@ Spooni = {
 	"zaun1-4",
 	"zaun1"
 }
-
-SpooniHashLookup = GetIndexedHashList(Spooni)
+SpooniHashLookup = {}
+for _, name in ipairs(Spooni) do SpooniHashLookup[GetHashKey(name)] = name; end
