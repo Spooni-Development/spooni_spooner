@@ -5,12 +5,14 @@ lua54 'yes'
 
 author 'Spooni'
 description 'Reworked Entity spawner for RedM'
+version '4'
 
 files {
 	'ui/index.html',
 	'ui/*.css',
 	'ui/*.js',
-	'ui/*.ttf',
+	'ui/img/*.svg',
+	'ui/fonts/*.ttf',
 }
 
 ui_page 'ui/index.html'

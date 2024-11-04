@@ -27,13 +27,13 @@ if Config.isRDR then
 	ClearTasksPrompt = Uiprompt:new(`INPUT_INTERACT_NEG`, "Clear Tasks", SpoonerPrompts)
 	ClearTasksPrompt:setHoldMode(true)
 	ClearTasksPrompt:setOnHoldModeJustCompleted(function()
-	       TryClearTasks(PlayerPedId())
+	    TryClearTasks(PlayerPedId())
 	end)
 
 	DetachPrompt = Uiprompt:new(`INPUT_INTERACT_LEAD_ANIMAL`, "Detach", SpoonerPrompts)
 	DetachPrompt:setHoldMode(true)
 	DetachPrompt:setOnHoldModeJustCompleted(function()
-	       TryDetach(PlayerPedId())
+	    TryDetach(PlayerPedId())
 	end)
 end
 
@@ -1854,6 +1854,103 @@ RegisterNUICallback('attackPed', function(data, cb)
 	cb {}
 end)
 
+function joaat_hash(input)
+    local hash = 0
+    for i = 1, #input do
+        local char = string.byte(input, i)
+        hash = (hash + char) & 0xFFFFFFFF
+        hash = (hash + (hash << 10)) & 0xFFFFFFFF
+        hash = (hash ~ (hash >> 6)) & 0xFFFFFFFF
+    end
+    hash = (hash + (hash << 3)) & 0xFFFFFFFF
+    hash = (hash ~ (hash >> 11)) & 0xFFFFFFFF
+    hash = (hash + (hash << 15)) & 0xFFFFFFFF
+    return hash & 0xFFFFFFFF
+end
+
+local doorCounter = 1
+
+function GenerateDoorhashText(baseText)
+    local doorhash_text = baseText .. "-" .. doorCounter
+    doorCounter = doorCounter + 1
+    return doorhash_text
+end
+
+function KeyboardInput(TextEntry, ExampleText, MaxStringLenght)
+    AddTextEntry('FMMC_KEY_TIP1', TextEntry)
+    DisplayOnscreenKeyboard(0, "FMMC_KEY_TIP1", "", ExampleText, "", "", "", MaxStringLenght)
+
+    while UpdateOnscreenKeyboard() ~= 1 and UpdateOnscreenKeyboard() ~= 2 do
+        Citizen.Wait(0)
+    end
+
+    if UpdateOnscreenKeyboard() ~= 2 then
+        local result = GetOnscreenKeyboardResult()
+        Citizen.Wait(100)
+        return result or false
+    else
+        Citizen.Wait(100)
+        return false
+    end
+end
+
+function ConvertDatabaseToDoorhash(database, content)
+    local baseText = KeyboardInput("Enter the base name for the doorhashes:", "", 50)
+
+    if not baseText then return content end
+
+    local original_string = content
+    local result = original_string:gsub('(<Item type="CEntityDef">.-<archetypeName>(.-)</archetypeName>.-<artificialAmbientOcclusion value="255"/>%s*)',function(item, archetypeName)
+		local doorhash_text = GenerateDoorhashText(baseText)
+		local doorhash = joaat_hash(doorhash_text)
+		local extensions_block = [[
+			<extensions>
+				<Item type="CExtensionDefDoor">
+					<name>]] .. archetypeName .. [[</name>
+					<offsetPosition x="0" y="0" z="0" />
+					<ELUGHoA_0xDAF8214E value="false" />
+					<enableLimitAngle value="true" />
+					<EFwMwAA_0x091A42D0 value="false" />
+					<startsLocked value="false" />
+					<canBreak value="false" />
+					<PkpciBA_0xA37CAB71 value="false" />
+					<dKbmTLA_0xCFE37BDB value="1.570796" />
+					<nuskEbA_0xA0CF3C8D value="1.570796" />
+					<RbUnQLA_0x9C555ECF value="0" />
+					<OPkNlHA_0xBCA0289E value="0" />
+					<doorTargetRatio value="0" />
+					<audioHash>ismdclsa_0x725d11b6</audioHash>
+					<doorTags>
+						<Item />
+						<Item />
+						<Item />
+						<Item />
+					</doorTags>
+				</Item>
+				<Item type="SSxlGTA_0xDB12012B">
+					<name>]] .. archetypeName .. [[</name>
+					<offsetPosition x="0" y="0" z="0" />
+					<Id>]] .. doorhash_text .. [[</Id> <!-- hash = ]] .. doorhash .. [[ -->
+				</Item>
+			</extensions>
+		]]
+
+		local flags = 1572865
+		local lodDist = 150
+		local childLodDist = 0
+		local modified_item = item
+			:gsub('<flags value="%d+"/>', '<flags value="' .. flags .. '"/>')
+			:gsub('<lodDist value="%d+"/>', '<lodDist value="' .. lodDist .. '"/>')
+			:gsub('<childLodDist value="%d+"/>', '<childLodDist value="' .. childLodDist .. '"/>')
+
+		return modified_item .. extensions_block
+	end)
+
+    doorCounter = 1
+    return result
+end
+
+
 function ConvertDatabaseToMapEditorXml(creator, database)
 	local xml = '<?xml version="1.0"?>\n<Map>\n\t<MapMeta Creator="' .. creator .. '"/>\n'
 
@@ -1942,8 +2039,8 @@ function ConvertDatabaseToYmap(database)
 			entitiesXml = entitiesXml .. '\t\t\t<scaleXY value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<scaleZ value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<parentIndex value="-1"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="500"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="500"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="150"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<lodLevel>LODTYPES_DEPTH_HD</lodLevel>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<numChildren value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<ambientOcclusionMultiplier value="255"/>\n'
@@ -1980,7 +2077,7 @@ function ConvertDatabaseToMlo(database)
 			local q = toQuaternion(properties.pitch, properties.roll, properties.yaw)
 			
 
-			properties.z2 = properties.z - (103.520000)
+			properties.z2 = properties.z - (140.0000)
 			
 
 			if not minX or properties.x < minX then
@@ -2336,7 +2433,7 @@ end
 
 
 
-function ExportDatabase(format)
+function ExportDatabase(format, content)
 	UpdateDatabase()
 
 	local db = PrepareDatabaseForSave()
@@ -2355,6 +2452,8 @@ function ExportDatabase(format)
 		return ConvertDatabaseToOffset(db)
 	elseif format == 'propplacer' then
 		return ConvertDatabaseToPropPlacerJson(db)
+	elseif format == 'doorhash' then
+		return ConvertDatabaseToDoorhash(db, content)
 	elseif format == 'backup' then
 		return BackupDbs()
 	end
@@ -2379,7 +2478,7 @@ function ImportDatabase(format, content)
 end
 
 RegisterNUICallback('exportDb', function(data, cb)
-	cb(ExportDatabase(data.format))
+	cb(ExportDatabase(data.format, data.content))
 end)
 
 RegisterNUICallback('importDb', function(data, cb)
@@ -3920,21 +4019,21 @@ function CreateObjects(data, flag, distance)
             end
 
             if IsControlPressed(0,`INPUT_SELECT_PREV_WEAPON`) then
-                local NewAngle = (ObjectHeading - 5 + 360)%360
+                local NewAngle = (ObjectHeading - 1 + 360)%360
                 ObjectRotate(entities,ObjectHeading,ObjectOrigin,NewAngle)
             end
 
             if IsControlPressed(0,`INPUT_SELECT_NEXT_WEAPON`) then
-                local NewAngle = (ObjectHeading + 5)%360
+                local NewAngle = (ObjectHeading + 1)%360
                 ObjectRotate(entities,ObjectHeading,ObjectOrigin,NewAngle)
             end
 			
             if IsControlPressed(0,`INPUT_FRONTEND_UP`) then
-				zValue = zValue + 0.1
+				zValue = zValue + 0.05
             end
 			
             if IsControlPressed(0,`INPUT_FRONTEND_DOWN`) then
-				zValue = zValue - 0.1
+				zValue = zValue - 0.05
             end
 
             if IsPromptCompleted('spooner','INPUT_FRONTEND_ACCEPT') then

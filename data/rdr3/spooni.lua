@@ -634,5 +634,6 @@ Spooni = {
 	"zaun1-4",
 	"zaun1"
 }
+
 SpooniHashLookup = {}
 for _, name in ipairs(Spooni) do SpooniHashLookup[GetHashKey(name)] = name; end

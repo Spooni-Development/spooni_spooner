@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "212 Keyboard";
-	src: url("keyboard.ttf");
+	src: url("./fonts/keyboard.ttf");
 }
 
 * {
@@ -290,11 +290,13 @@ input:disabled {
 ::-webkit-scrollbar {
 	background: black;
 	border-radius: 10px;
+	width: 10px;
 }
-  
+
 ::-webkit-scrollbar-thumb {
 	background-color: white;
 	border-radius: 10px;
+	width: 10px;
 }
 
 .object {

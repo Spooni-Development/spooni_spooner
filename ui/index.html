@@ -1,8 +1,6 @@
 <html>
 	<head>
 		<title>Spooner</title>
-		<script src="https://kit.fontawesome.com/5537a772c3.js" crossorigin="anonymous"></script> 
-		<!-- If you have problems with any icons, you will need to make your own Fontawsome account, as our account has probably made too many requests. -->
 		<link rel="stylesheet" href="style.css">
 		<link rel="stylesheet" href="rdr3.css">
 		<script src="script.js"></script>
@@ -170,7 +168,7 @@
 			<div id="ped-search" class="search">
 				<input type="text" id="ped-search-filter" class="search-filter" value="">
 				<button id="favourite-peds" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="ped-list" class="list"></div>
@@ -181,7 +179,7 @@
 			<div id="vehicle-search" class="search">
 				<input type="text" id="vehicle-search-filter" class="search-filter" value="">
 				<button id="favourite-vehicles" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="vehicle-list" class="list"></div>
@@ -192,7 +190,7 @@
 			<div id="object-search" class="search">
 				<input type="text" id="object-search-filter" class="search-filter" value="">
 				<button id="favourite-objects" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="object-list" class="list"></div>
@@ -203,7 +201,7 @@
 			<div id="spooni-search" class="search">
 				<input type="text" id="spooni-search-filter" class="search-filter" value="">
 				<button id="favourite-spooni" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="spooni-list" class="list"></div>
@@ -266,7 +264,7 @@
 							<input type="number" class="set-attach adjust-input" id="attachment-z" step="0.01">
 						</div>
 						<button id="copy-attachment-position" class="copy-button">
-							<i class="fas fa-clipboard"></i>
+							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -290,7 +288,7 @@
 							<input type="number" class="set-attach rotate-input" id="attachment-yaw" step="1.0" min="-359" max="359">
 						</div>
 						<button id="copy-attachment-rotation" class="copy-button">
-							<i class="fas fa-clipboard"></i>
+							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -327,7 +325,7 @@
 					<div class="label">Model</div>
 					<div class="value" id="properties-model"></div>
 					<button id="copy-model-name" class="copy-button">
-						<i class="fas fa-clipboard" aria-hidden="true"></i>
+						<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24"></i>
 					</button>
 				</div>
 				<div class="property multiple">
@@ -362,7 +360,7 @@
 							<input type="number" class="set-coords adjust-input" id="properties-z" step="0.01">
 						</div>
 						<button id="copy-position" class="copy-button">
-							<i class="fas fa-clipboard"></i>
+							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -390,7 +388,7 @@
 							<input type="number" class="set-rotation rotate-input" id="properties-yaw" min="-359" max="359" step="1">
 						</div>
 						<button id="copy-rotation" class="copy-button">
-							<i class="fas fa-clipboard"></i>
+							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -529,7 +527,7 @@
 			<div id="walk-style-search" class="search">
 				<input type="text" id="walk-style-search-filter" class="search-filter" value="">
 				<button id="favourite-walk-styles" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="walk-style-list" class="list"></div>
@@ -539,7 +537,7 @@
 			<div id="weapon-search" class="search">
 				<input type="text" id="weapon-search-filter" class="search-filter" value="">
 				<button id="favourite-weapons" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="weapon-list" class="list"></div>
@@ -568,7 +566,7 @@
 			<div id="scenario-search" class="search">
 				<input type="text" id="scenario-search-filter" class="search-filter" value="">
 				<button id="favourite-scenarios" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="scenario-list" class="list"></div>
@@ -602,14 +600,14 @@
 			<div id="import-export-controls">
 				<select id="import-export-format">
 					<option value="spooner-db-json">Spooner DB JSON</option>
-					<option value="map-editor-xml">Map Editor XML</option>
+					<option value="map-editor-xml">XML</option>
 					<option value="ymap">Ymap</option>
-					<option value="mlo">Mlo</option>
-					<option value="script">Script</option>
+					<option value="mlo">MLO</option>
+					<option value="script">MICO (Prop Loader)</option>
+					<option value="doorhash">Doorhash</option>
 					<option value="offset">Offset</option>
 					<option value="propset">Propset XML</option>
 					<option value="propplacer">propplacer JSON</option>
-					<option value="doorhash">Door Hash</option>
 					<option value="backup">Spooner Backup</option>
 				</select>
 				<input type="text" id="import-url" placeholder="Import from URL">
@@ -652,7 +650,7 @@
 			<div id="animation-search" class="search">
 				<input type="text" id="animation-search-filter" class="search-filter" value="">
 				<button id="favourite-animations" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="animation-list" class="list"></div>
@@ -689,7 +687,7 @@
 			<div id="propset-search" class="search">
 				<input type="text" id="propset-search-filter" class="search-filter" value="">
 				<button id="favourite-propsets" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="propset-list" class="list"></div>
@@ -700,7 +698,7 @@
 			<div id="pickup-search" class="search">
 				<input type="text" id="pickup-search-filter" class="search-filter" value="">
 				<button id="favourite-pickups" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="pickup-list" class="list"></div>
@@ -711,7 +709,7 @@
 			<div id="player-model-search" class="search">
 				<input type="text" id="player-model-search-filter" class="search-filter" value="">
 				<button id="favourite-player-models" class="favourites">
-					<i class="far fa-star"></i>
+					<i><img src="./img/star-off.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<div id="player-model-list" class="list"></div>
@@ -724,7 +722,7 @@
 				<div id="config-flag-label">Set flag:</div>
 				<input id="config-flag" type="number" min="0" step="1" value="1">
 				<button id="add-config-flag">
-					<i class="fas fa-plus"></i>
+					<i><img src="./img/plus.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<button id="close-config-flags-menu">Back</button>
@@ -865,7 +863,7 @@
 				<h3>Spawn menu - <span class="control">F</span></h3>
 				<p>The <strong>Spawn</strong> menu provides searchable lists to select an entity to spawn. Left-clicking on an entity sets it as your current spawn.</p>
 				<p>If an entity is not included in the list, you can still spawn it by entering the full model name in the search field and clicking <strong>Spawn By Name</strong>.</p>
-				<p>Right-clicking an entity in any of the spawn menus will add that entity as a favourite. Clicking the favourites button <i class="fas fa-star"></i> will toggle displaying only your favourited entities.</p>
+				<p>Right-clicking an entity in any of the spawn menus will add that entity as a favourite. Clicking the favourites button <i><img src="./img/star.svg" width="24" height="24"></i> will toggle displaying only your favourited entities.</p>
 				<h3>Database menu - <span class="control">X</span></h3>
 				<p>The <strong>Database</strong> menu stores a list of entities. When an entity is spawned, it is automatically added to the current database. Existing entities can be added/removed from the database via the <strong>Properties</strong> menu.</p>
 				<ul>
