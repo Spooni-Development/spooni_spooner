@@ -1,0 +1,26 @@
+@font-face {
+	font-family: "Chinese Rocks";
+	src: url("./fonts/chineserocks.ttf");
+}
+
+button {
+	font-family: "Chinese Rocks";
+}
+
+h1 {
+	font-family: "Chinese Rocks";
+}
+
+h2 {
+	font-family: "Chinese Rocks";
+}
+
+h3 {
+	font-family: "Chinese Rocks";
+}
+
+.object.selected {
+	background-color: red;
+	color: white;
+	border-radius: 10px;
+}
