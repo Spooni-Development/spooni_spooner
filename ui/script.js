@@ -1105,7 +1105,10 @@ function openDatabase(data,filter) {
 			++totalNetworked;
 		}
 
-		if (!filter || filter == '' || database[handle].name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filter || 
+			filter == '' || 
+			database[handle].name.toLowerCase().includes(filter.toLowerCase()) || 
+			handle.includes(filter)) {
 			var div = document.createElement('div');
 
 			if (database[handle].isSelf) {
@@ -2665,9 +2668,9 @@ window.addEventListener('load', function() {
 	});
 
 	document.getElementById('copy-model-name').addEventListener('click', function(event) {
-               var modelname = document.getElementById('properties-model').innerText;
-               copyToClipboard(modelname)
-       });
+			var modelname = document.getElementById('properties-model').innerText;
+			copyToClipboard(modelname)
+	});
 
 	document.getElementById('copy-attachment-rotation').addEventListener('click', function(event) {
 		var p = document.getElementById('attachment-pitch').value;
