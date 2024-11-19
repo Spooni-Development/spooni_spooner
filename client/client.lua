@@ -1483,7 +1483,7 @@ function AttachEntity(from, to, bone, x, y, z, pitch, roll, yaw, useSoftPinning,
 	end
 end
 
-function LoadDatabase(db, relative, replace, isOffsetPlacement)
+function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
 	if replace then
 		RemoveAllFromDatabase()
 	end
@@ -1508,15 +1508,23 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement)
 		end
 	end
 
-	for entity, props in pairs(db.spawn) do
-		if relative then
-			ax = ax + props.x
-			ay = ay + props.y
-			az = az + props.z
-		end
+	local spawnData = (dataType == "script" and db.spawn.spawn) or db.spawn
 
-		table.insert(spawns, {entity = tonumber(entity), props = props})
-	end
+    for entity, props in pairs(spawnData) do
+        local entityProps = props.props or props
+
+        if entityProps.x and entityProps.y and entityProps.z then
+            if relative then
+                ax = ax + entityProps.x
+                ay = ay + entityProps.y
+                az = az + entityProps.z
+            end
+
+            table.insert(spawns, {entity = tonumber(entity), props = entityProps})
+        else
+            print("!! missing prop positions in entity: " .. tostring(entity))
+        end
+    end
 
 	local dx, dy, dz
 
@@ -1668,7 +1676,6 @@ function GetSavedDatabases()
 
 	while true do
 		local kvp = FindKvp(handle)
-
 		if kvp then
 			table.insert(dbs, string.sub(kvp, 4))
 		else
@@ -2077,7 +2084,7 @@ function ConvertDatabaseToMlo(database)
 			local q = toQuaternion(properties.pitch, properties.roll, properties.yaw)
 			
 
-			properties.z2 = properties.z - (140.0000)
+			properties.z2 = properties.z - (120.0000)
 			
 
 			if not minX or properties.x < minX then
@@ -2104,7 +2111,6 @@ function ConvertDatabaseToMlo(database)
 			if properties.isFrozen then
 				flags = flags + 32
 			end
-                        
 
 			entitiesXml = entitiesXml .. '\t\t<Item type="CEntityDef">\n'
 			entitiesXml = entitiesXml .. '\t\t\t<archetypeName>' .. properties.name .. '</archetypeName>\n'
@@ -2114,8 +2120,8 @@ function ConvertDatabaseToMlo(database)
 			entitiesXml = entitiesXml .. '\t\t\t<scaleXY value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<scaleZ value="1"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<parentIndex value="-1"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="150"/>\n'
-			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="150"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<lodDist value="30"/>\n'
+			entitiesXml = entitiesXml .. '\t\t\t<childLodDist value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<lodLevel>LODTYPES_DEPTH_HD</lodLevel>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<numChildren value="0"/>\n'
 			entitiesXml = entitiesXml .. '\t\t\t<ambientOcclusionMultiplier value="255"/>\n'
@@ -2431,7 +2437,63 @@ local function loadXml(xml)
     LoadDatabase(db, false, false)
 end
 
+local function cleanXml(xml)
+	xml = xml:gsub("Config%s*=%s*{}", "")
+    xml = xml:gsub("}%s*Config%.Objects%d*%s*=%s*{", ",")
+    xml = xml:gsub("Config%.Objects%d*%s*=%s*{", "{")
+    xml = xml:gsub("^objects%s*=%s*", "")
+    xml = xml:gsub(",%s*}", ",}") 
+    xml = xml:gsub("^%s*,", "")
+    --xml = xml:gsub(",%s*\n", "\n")
+    xml = xml:gsub(",%s*$", "")
 
+    return xml
+end
+
+local function loadScript(xml)
+	xml = cleanXml(xml)
+	--xml = xml:gsub("^objects%s*=%s*", "")
+    local func, err = load("return " .. xml)
+    if not func then
+        print("error converting to lua table", err)
+        return
+    end
+
+    local parsedXml = func()
+    if not parsedXml then
+        print("Error: Failed to load parsed XML data.")
+        return
+    end
+    local db = { spawn = {} }
+    local i = 0
+
+    for _, object in ipairs(parsedXml) do
+        if object.coords and object.coords.x and object.coords.y and object.coords.z and
+           object.rotation and object.rotation.x and object.rotation.y and object.rotation.z then
+            i = i + 1
+            local key = tostring(i)
+
+            db.spawn[key] = {
+                quaternion = {},
+                props = {
+                    x = object.coords.x,
+                    y = object.coords.y,
+                    z = object.coords.z,
+                    pitch = object.rotation.x,
+                    roll = object.rotation.y,
+                    yaw = object.rotation.z,
+                    model = joaat(object.model),
+                    collisionDisabled = false,
+                    isVisible = true
+                }
+            }
+        else
+            print("!! skipping object with missing values")
+        end
+    end
+	local dataType = "script"
+    LoadDatabase(db, false, false, false, dataType)
+end
 
 function ExportDatabase(format, content)
 	UpdateDatabase()
@@ -2474,6 +2536,8 @@ function ImportDatabase(format, content)
 		loadXml(content)
 	elseif format == 'offset' then
 		loadOffset(content)
+	elseif format == 'script' then
+        loadScript(content)
 	end
 end
 
