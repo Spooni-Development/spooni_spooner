@@ -2542,7 +2542,7 @@ window.addEventListener('load', function() {
 				importButton.disabled = false;
 				break;
 			case 'script':
-				importButton.disabled = false;
+				importButton.disabled = true;
 				break;
 			case 'offset':
 				importButton.disabled = false;
