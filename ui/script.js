@@ -1105,7 +1105,10 @@ function openDatabase(data,filter) {
 			++totalNetworked;
 		}
 
-		if (!filter || filter == '' || database[handle].name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filter || 
+			filter == '' || 
+			database[handle].name.toLowerCase().includes(filter.toLowerCase()) || 
+			handle.includes(filter)) {
 			var div = document.createElement('div');
 
 			if (database[handle].isSelf) {
