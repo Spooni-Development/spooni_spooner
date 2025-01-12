@@ -1015,14 +1015,16 @@ function CanDeleteEntity(entity)
 end
 
 function StoreDeletedEntity(entity)
-	local props = GetLiveEntityProperties(entity)
+    local props = GetLiveEntityProperties(entity)
 
-	table.insert(DeletedEntities, {
-		x = props.x,
-		y = props.y,
-		z = props.z,
-		model = props.model,
-	})
+    table.insert(DeletedEntities, {
+        x = props.x,
+        y = props.y,
+        z = props.z,
+        model = props.model,
+        name = props.name,
+        distance = 0.1
+    })
 end
 
 function RemoveEntity(entity)
@@ -2171,6 +2173,26 @@ function ConvertDatabaseToScript(database)
 	return xml
 end
 
+function ConvertDatabaseToScriptDeleter(database)
+    local entitiesXml = ''
+
+    for entity, properties in pairs(database.delete) do
+        entitiesXml = entitiesXml .. '\t{\n'
+        entitiesXml = entitiesXml .. '\t\tmodel = `' .. properties.name .. '`,\n'
+        entitiesXml = entitiesXml .. string.format('\t\tcoords = vec3(%f,%f,%f),\n', properties.x, properties.y, properties.z)
+        entitiesXml = entitiesXml .. '\t\tdistance = ' .. properties.distance .. ',\n'
+        entitiesXml = entitiesXml .. '\t},\n'
+    end
+
+    local xml = 'objects = {\n'
+
+    xml = xml .. entitiesXml
+
+    xml = xml .. '}'
+
+    return xml
+end
+
 function ConvertDatabaseToOffset(database)
 	local entities = {}
 	local count = 0
@@ -2510,6 +2532,8 @@ function ExportDatabase(format, content)
 		return ConvertDatabaseToMlo(db)
 	elseif format == 'script' then
 		return ConvertDatabaseToScript(db)
+	elseif format == 'script-deleter' then
+		return ConvertDatabaseToScriptDeleter(db)
 	elseif format == 'offset' then
 		return ConvertDatabaseToOffset(db)
 	elseif format == 'propplacer' then
