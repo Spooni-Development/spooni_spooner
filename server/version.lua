@@ -1,12 +1,25 @@
+-- Color Codes Reference:
+-- ^0 = White
+-- ^1 = Red
+-- ^2 = Green
+-- ^3 = Yellow
+-- ^4 = Blue
+-- ^5 = Light Blue
+-- ^6 = Purple
+-- ^7 = White
+-- ^8 = Dark Red
+-- ^9 = Dark Blue
+
 local resourcename = GetCurrentResourceName()
 local version = GetResourceMetadata(resourcename, "version", 0)
 local isMapping = false
 local escrow = false
+local updateUrl = 'https://raw.githubusercontent.com/Spooni-Development/spooni_updates/refs/heads/main/scripts/spooni_spooner.json'
 
 Citizen.CreateThread(function()
     Wait(5000)
     
-    PerformHttpRequest('https://raw.githubusercontent.com/Spooni-Development/spooni_updates/refs/heads/main/scripts/spooni_spooner.json', function(err, text, headers)
+    PerformHttpRequest(updateUrl, function(err, text, headers)
         if err ~= 200 or not text then
             print('^8' .. resourcename .. ' ^3Unable to check for updates^0')
             return
@@ -34,21 +47,8 @@ Citizen.CreateThread(function()
             if escrow == true then
                 print('^8Download: ^3https://keymaster.fivem.net^0')
             else
-                print('^8Download: ^3https://github.com/Spooni-Development/spooni_spooner^0')
+                print('^8Download: ^3https://github.com/Spooni-Development/' .. resourcename .. '^0')
             end
         end
     end, 'GET')
 end)
-
--- Color Codes Reference:
--- ^0 = White
--- ^1 = Red
--- ^2 = Green
--- ^3 = Yellow
--- ^4 = Blue
--- ^5 = Light Blue
--- ^6 = Purple
--- ^7 = White
--- ^8 = Dark Red
--- ^9 = Dark Blue
-
