@@ -3356,6 +3356,9 @@ function MainSpoonerUpdates()
 				camX = string.format('%.2f', x2),
 				camY = string.format('%.2f', y2),
 				camZ = string.format('%.2f', z2),
+				camrotX = string.format('%.2f', pitch2),
+				camrotY = string.format('%.2f', roll2),
+				camrotZ = string.format('%.2f', yaw2), 
 				camHeading = string.format('%.2f', yaw2),
 				focusTarget = FocusTarget,
 				freeFocus = FreeFocus
