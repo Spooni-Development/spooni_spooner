@@ -1,9 +1,8 @@
 <html>
 	<head>
 		<title>Spooner</title>
-		<link rel="stylesheet" href="style.css">
-		<link rel="stylesheet" href="rdr3.css">
-		<script src="script.js"></script>
+		<link rel="stylesheet" href="css/style.css">
+		<script src="js/script.js"></script>
 	</head>
 	<body>
 		<div id="hud">
@@ -166,9 +165,9 @@
 		</div>
 		<div id="ped-menu" class="menu">
 			<div id="ped-search" class="search">
-				<input type="text" id="ped-search-filter" class="search-filter" value="">
-				<button id="favourite-peds" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="ped-search-filter" class="search-filter" placeholder="Search peds..." aria-label="Search for peds">
+				<button id="favourite-peds" class="favourites" title="Toggle favorite peds" aria-label="Toggle favorite peds">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="ped-list" class="list"></div>
@@ -177,9 +176,9 @@
 		</div>
 		<div id="vehicle-menu" class="menu">
 			<div id="vehicle-search" class="search">
-				<input type="text" id="vehicle-search-filter" class="search-filter" value="">
-				<button id="favourite-vehicles" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="vehicle-search-filter" class="search-filter" placeholder="Search vehicles..." aria-label="Search for vehicles">
+				<button id="favourite-vehicles" class="favourites" title="Toggle favorite vehicles" aria-label="Toggle favorite vehicles">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="vehicle-list" class="list"></div>
@@ -188,9 +187,9 @@
 		</div>
 		<div id="object-menu" class="menu">
 			<div id="object-search" class="search">
-				<input type="text" id="object-search-filter" class="search-filter" value="">
-				<button id="favourite-objects" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="object-search-filter" class="search-filter" placeholder="Search objects..." aria-label="Search for objects">
+				<button id="favourite-objects" class="favourites" title="Toggle favorite objects" aria-label="Toggle favorite objects">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="object-list" class="list"></div>
@@ -199,9 +198,9 @@
 		</div>
 		<div id="spooni-menu" class="menu">
 			<div id="spooni-search" class="search">
-				<input type="text" id="spooni-search-filter" class="search-filter" value="">
-				<button id="favourite-spooni" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="spooni-search-filter" class="search-filter" placeholder="Search spooni..." aria-label="Search for spooni">
+				<button id="favourite-spooni" class="favourites" title="Toggle favorite spooni" aria-label="Toggle favorite spooni">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="spooni-list" class="list"></div>
@@ -210,7 +209,7 @@
 		</div>
 		<div id="object-database" class="menu">
 			<div id="object-database-search" class="search">
-				<input type="text" id="object-database-search-filter" class="search-filter" value="">
+				<input type="text" id="object-database-search-filter" class="search-filter" placeholder="Search database..." aria-label="Search database entities">
 			</div>
 			<div id="object-database-stats">
 				<div class="object-database-stat">All: <span id="object-database-total-entities"></span></div>
@@ -228,7 +227,7 @@
 		<div id="add-to-db-menu" class="menu">
 			<div id="add-to-db-options">
 				<span>Handle:</span>
-				<input id="custom-entity-handle">
+				<input id="custom-entity-handle" type="number" placeholder="Enter entity handle" aria-label="Entity handle" min="0">
 				<button id="add-custom-entity-btn">Add</button>
 			</div>
 			<button id="add-to-db-menu-close">Back</button>
@@ -264,7 +263,7 @@
 							<input type="number" class="set-attach adjust-input" id="attachment-z" step="0.01">
 						</div>
 						<button id="copy-attachment-position" class="copy-button">
-							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
+							<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -288,7 +287,7 @@
 							<input type="number" class="set-attach rotate-input" id="attachment-yaw" step="1.0" min="-359" max="359">
 						</div>
 						<button id="copy-attachment-rotation" class="copy-button">
-							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
+							<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
 					</div>
 				</div>
@@ -324,121 +323,141 @@
 				<div class="property" id="properties-model-container">
 					<div class="label">Model</div>
 					<div class="value" id="properties-model"></div>
-					<button id="copy-model-name" class="copy-button">
-						<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24"></i>
+					<button id="copy-model-name" class="copy-button" title="Copy model name to clipboard" aria-label="Copy model name to clipboard">
+						<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24" alt="Copy"></i>
 					</button>
 				</div>
-				<div class="property multiple">
-					<button id="properties-select">Select</button>
-					<button id="properties-focus">Focus</button>
-				</div>
-				<div class="property">
-					<button id="properties-add-to-db" class="add-remove-db">Add to DB</button>
-					<button id="properties-remove-from-db" class="add-remove-db">Remove from DB</button>
-				</div>
-				<div class="property">
-					<button id="properties-freeze">Freeze</button>
-					<button id="properties-unfreeze">Unfreeze</button>
-				</div>
-				<div class="property">
-					<div class="label">Position</div>
-					<div class="labelled-input-group">
-						<div class="labelled-input">
-							<div class="input-label">Speed</div>
-							<input type="number" class="adjust-speed" id="properties-adjust-speed" step="0.01">
+				<details class="property-section" open>
+					<summary class="section-header">Basic Actions</summary>
+					<div class="section-content">
+						<div class="property multiple">
+							<button id="properties-select">Select</button>
+							<button id="properties-focus">Focus</button>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">X</div>
-							<input type="number" class="set-coords adjust-input" id="properties-x" step="0.01">
+						<div class="property">
+							<button id="properties-add-to-db" class="add-remove-db">Add to DB</button>
+							<button id="properties-remove-from-db" class="add-remove-db">Remove from DB</button>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">Y</div>
-							<input type="number" class="set-coords adjust-input" id="properties-y" step="0.01">
+						<div class="property">
+							<button id="properties-freeze">Freeze</button>
+							<button id="properties-unfreeze">Unfreeze</button>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">Z</div>
-							<input type="number" class="set-coords adjust-input" id="properties-z" step="0.01">
-						</div>
-						<button id="copy-position" class="copy-button">
-							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
-						</button>
 					</div>
-				</div>
-				<div class="property multiple">
-					<button id="properties-place-here">Place Here</button>
-					<button id="properties-goto">Go To</button>
-				</div>
-				<div class="property">
-					<div class="label">Rotation</div>
-					<div class="labelled-input-group">
-						<div class="labelled-input">
-							<div class="input-label">Speed</div>
-							<input type="number" class="rotate-speed" id="properties-rotate-speed" step="0.1">
+				</details>
+				<details class="property-section" open>
+					<summary class="section-header">Position & Rotation</summary>
+					<div class="section-content">
+						<div class="property">
+							<div class="label">Position</div>
+							<div class="labelled-input-group">
+								<div class="labelled-input">
+									<div class="input-label">Speed</div>
+									<input type="number" class="adjust-speed" id="properties-adjust-speed" step="0.01">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">X</div>
+									<input type="number" class="set-coords adjust-input" id="properties-x" step="0.01">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">Y</div>
+									<input type="number" class="set-coords adjust-input" id="properties-y" step="0.01">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">Z</div>
+									<input type="number" class="set-coords adjust-input" id="properties-z" step="0.01">
+								</div>
+								<button id="copy-position" class="copy-button" title="Copy position to clipboard" aria-label="Copy position to clipboard">
+									<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24" alt="Copy"></i>
+								</button>
+							</div>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">Pitch</div>
-							<input type="number" class="set-rotation rotate-input" id="properties-pitch" min="-359" max="359" step="1">
+						<div class="property multiple">
+							<button id="properties-place-here">Place Here</button>
+							<button id="properties-goto">Go To</button>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">Roll</div>
-							<input type="number" class="set-rotation rotate-input" id="properties-roll" min="-359" max="359" step="1">
+						<div class="property">
+							<div class="label">Rotation</div>
+							<div class="labelled-input-group">
+								<div class="labelled-input">
+									<div class="input-label">Speed</div>
+									<input type="number" class="rotate-speed" id="properties-rotate-speed" step="0.1">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">Pitch</div>
+									<input type="number" class="set-rotation rotate-input" id="properties-pitch" min="-359" max="359" step="1">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">Roll</div>
+									<input type="number" class="set-rotation rotate-input" id="properties-roll" min="-359" max="359" step="1">
+								</div>
+								<div class="labelled-input">
+									<div class="input-label">Yaw</div>
+									<input type="number" class="set-rotation rotate-input" id="properties-yaw" min="-359" max="359" step="1">
+								</div>
+								<button id="copy-rotation" class="copy-button" title="Copy rotation to clipboard" aria-label="Copy rotation to clipboard">
+									<i aria-hidden="true"><img src="./img/clipboard.svg" width="24" height="24" alt="Copy"></i>
+								</button>
+							</div>
 						</div>
-						<div class="labelled-input">
-							<div class="input-label">Yaw</div>
-							<input type="number" class="set-rotation rotate-input" id="properties-yaw" min="-359" max="359" step="1">
+						<div class="property">
+							<button id="properties-reset-rotation">Reset Rotation</button>
 						</div>
-						<button id="copy-rotation" class="copy-button">
-							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
-						</button>
 					</div>
-				</div>
-				<div class="property">
-					<button id="properties-reset-rotation">Reset Rotation</button>
-				</div>
-				<div class="property">
-					<div class="label">Health</div>
-					<input type="number" id="properties-health" min="0" step="1">
-				</div>
-				<div class="property multiple">
-					<button id="properties-invincible-on">Invincibility On</button>
-					<button id="properties-invincible-off">Invincibility Off</button>
-				</div>
-				<div class="property">
-					<button id="properties-visible">Visibility On</button>
-					<button id="properties-invisible">Visibility Off</button>
-				</div>
-				<div class="property multiple">
-					<button id="properties-gravity-on">Gravity On</button>
-					<button id="properties-gravity-off">Gravity Off</button>
-				</div>
-				<div class="property">
-					<button id="properties-collision-on">Collision On</button>
-					<button id="properties-collision-off">Collision Off</button>
-				</div>
-				<div class="property">
-					<button id="properties-clone">Clone</button>
-				</div>
-				<div class="property">
-					<button id="properties-attach">Attachment Options</button>
-				</div>
-				<div class="property ped-property">
-					<button id="properties-ped-options">Ped Options</button>
-				</div>
-				<div class="property vehicle-property">
-					<button id="properties-vehicle-options">Vehicle Options</button>
-				</div>
-				<div class="property object-property">
-					<button id="properties-lights-options">Light Options</button>
-				</div>
-				<div class="property">
-					<button id="properties-register-as-networked">Register as Networked</button>
-					<button id="properties-request-control">Request Control</button>
-				</div>
-				<div class="property">
-					<button id="properties-delete">Delete</button>
-				</div>
+				</details>
+				<details class="property-section">
+					<summary class="section-header">Health & Status</summary>
+					<div class="section-content">
+						<div class="property">
+							<div class="label">Health</div>
+							<input type="number" id="properties-health" min="0" step="1">
+						</div>
+						<div class="property multiple">
+							<button id="properties-invincible-on">Invincibility On</button>
+							<button id="properties-invincible-off">Invincibility Off</button>
+						</div>
+						<div class="property">
+							<button id="properties-visible">Visibility On</button>
+							<button id="properties-invisible">Visibility Off</button>
+						</div>
+						<div class="property multiple">
+							<button id="properties-gravity-on">Gravity On</button>
+							<button id="properties-gravity-off">Gravity Off</button>
+						</div>
+						<div class="property">
+							<button id="properties-collision-on">Collision On</button>
+							<button id="properties-collision-off">Collision Off</button>
+						</div>
+					</div>
+				</details>
+				<details class="property-section">
+					<summary class="section-header">Actions & Options</summary>
+					<div class="section-content">
+						<div class="property">
+							<button id="properties-clone">Clone</button>
+						</div>
+						<div class="property">
+							<button id="properties-attach">Attachment Options</button>
+						</div>
+						<div class="property ped-property">
+							<button id="properties-ped-options">Ped Options</button>
+						</div>
+						<div class="property vehicle-property">
+							<button id="properties-vehicle-options">Vehicle Options</button>
+						</div>
+						<div class="property object-property">
+							<button id="properties-lights-options">Light Options</button>
+						</div>
+						<div class="property">
+							<button id="properties-register-as-networked">Register as Networked</button>
+							<button id="properties-request-control">Request Control</button>
+						</div>
+					</div>
+				</details>
 			</div>
-			<button id="properties-menu-close-btn">Close</button>
+			<div class="property multiple">
+				<button id="properties-delete">Delete</button>
+				<button id="properties-menu-close-btn">Close</button>
+			</div>
 		</div>
 		<div id="ped-options-menu" class="menu">
 			<div id="ped-options" class="list">
@@ -525,9 +544,9 @@
 		<div id="entity-select-menu" class="menu"></div>
 		<div id="walk-style-menu" class="menu">
 			<div id="walk-style-search" class="search">
-				<input type="text" id="walk-style-search-filter" class="search-filter" value="">
-				<button id="favourite-walk-styles" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="walk-style-search-filter" class="search-filter" placeholder="Search walk styles..." aria-label="Search for walk styles">
+				<button id="favourite-walk-styles" class="favourites" title="Toggle favorite walk styles" aria-label="Toggle favorite walk styles">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="walk-style-list" class="list"></div>
@@ -535,9 +554,9 @@
 		</div>
 		<div id="weapon-menu" class="menu">
 			<div id="weapon-search" class="search">
-				<input type="text" id="weapon-search-filter" class="search-filter" value="">
-				<button id="favourite-weapons" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="weapon-search-filter" class="search-filter" placeholder="Search weapons..." aria-label="Search for weapons">
+				<button id="favourite-weapons" class="favourites" title="Toggle favorite weapons" aria-label="Toggle favorite weapons">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="weapon-list" class="list"></div>
@@ -564,9 +583,9 @@
 		</div>
 		<div id="scenario-menu" class="menu">
 			<div id="scenario-search" class="search">
-				<input type="text" id="scenario-search-filter" class="search-filter" value="">
-				<button id="favourite-scenarios" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="scenario-search-filter" class="search-filter" placeholder="Search scenarios..." aria-label="Search for scenarios">
+				<button id="favourite-scenarios" class="favourites" title="Toggle favorite scenarios" aria-label="Toggle favorite scenarios">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="scenario-list" class="list"></div>
@@ -574,6 +593,9 @@
 			<button id="scenario-menu-close">Back</button>
 		</div>
 		<div id="save-load-db-menu" class="menu">
+			<div class="search">
+				<input type="text" id="db-search-filter" class="search-filter" placeholder="Search databases..." aria-label="Search databases">
+			</div>
 			<div id="db-list" class="list"></div>
 			<div id="load-db-options">
 				<div>
@@ -590,7 +612,7 @@
 				</div>
 			</div>
 			<div id="save-db-options">
-				<input id="save-db-name" type="text">
+				<input id="save-db-name" type="text" placeholder="Enter database name..." aria-label="Database name">
 				<button id="save-db-btn">Save</button>
 			</div>
 			<button id="import-export-db-btn">Import/Export</button>
@@ -598,7 +620,7 @@
 		</div>
 		<div id="import-export-db">
 			<div id="import-export-controls">
-				<select id="import-export-format">
+				<select id="import-export-format" aria-label="Import/Export format">
 					<option value="ymap">YMAP</option>
 					<option value="mlo">MLO</option>
 					<option value="script">Prop Loader</option>
@@ -609,13 +631,13 @@
 					<option value="propset">Propset XML</option>
 					<option value="spooner-db-json">Spooner DB JSON</option>
 					<option value="backup">Spooner Backup</option>
-					<option value="propplacer">propplacer JSON</option>
+					<option value="propplacer">Propplacer JSON</option>
 				</select>
-				<input type="text" id="import-url" placeholder="Import from URL">
+				<input type="text" id="import-url" placeholder="Import from URL" aria-label="Import URL">
 				<button id="import-db">Import</button>
 				<button id="export-db">Export</button>
 			</div>
-			<textarea id="import-export-content" spellcheck="false"></textarea>
+			<textarea id="import-export-content" spellcheck="false" aria-label="Import/Export content" placeholder="Paste content here for import or view exported content..."></textarea>
 			<button id="import-export-db-close">Close</button>
 		</div>
 		<div id="delete-db-prompt">
@@ -649,9 +671,9 @@
 		</div>
 		<div id="animation-menu" class="menu">
 			<div id="animation-search" class="search">
-				<input type="text" id="animation-search-filter" class="search-filter" value="">
-				<button id="favourite-animations" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="animation-search-filter" class="search-filter" placeholder="Search animations..." aria-label="Search for animations">
+				<button id="favourite-animations" class="favourites" title="Toggle favorite animations" aria-label="Toggle favorite animations">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="animation-list" class="list"></div>
@@ -686,9 +708,9 @@
 		</div>
 		<div id="propset-menu" class="menu">
 			<div id="propset-search" class="search">
-				<input type="text" id="propset-search-filter" class="search-filter" value="">
-				<button id="favourite-propsets" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="propset-search-filter" class="search-filter" placeholder="Search propsets..." aria-label="Search for propsets">
+				<button id="favourite-propsets" class="favourites" title="Toggle favorite propsets" aria-label="Toggle favorite propsets">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="propset-list" class="list"></div>
@@ -697,9 +719,9 @@
 		</div>
 		<div id="pickup-menu" class="menu">
 			<div id="pickup-search" class="search">
-				<input type="text" id="pickup-search-filter" class="search-filter" value="">
-				<button id="favourite-pickups" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="pickup-search-filter" class="search-filter" placeholder="Search pickups..." aria-label="Search for pickups">
+				<button id="favourite-pickups" class="favourites" title="Toggle favorite pickups" aria-label="Toggle favorite pickups">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="pickup-list" class="list"></div>
@@ -708,9 +730,9 @@
 		</div>
 		<div id="player-model-menu" class="menu">
 			<div id="player-model-search" class="search">
-				<input type="text" id="player-model-search-filter" class="search-filter" value="">
-				<button id="favourite-player-models" class="favourites">
-					<i><img src="./img/star-off.svg" width="24" height="24"></i>
+				<input type="text" id="player-model-search-filter" class="search-filter" placeholder="Search player models..." aria-label="Search for player models">
+				<button id="favourite-player-models" class="favourites" title="Toggle favorite player models" aria-label="Toggle favorite player models">
+					<i aria-hidden="true"><img src="./img/star-off.svg" width="24" height="24" alt="Favorite"></i>
 				</button>
 			</div>
 			<div id="player-model-list" class="list"></div>
@@ -723,7 +745,7 @@
 				<div id="config-flag-label">Set flag:</div>
 				<input id="config-flag" type="number" min="0" step="1" value="1">
 				<button id="add-config-flag">
-					<i><img src="./img/plus.svg" width="24" height="24"></i>
+					<i aria-hidden="true"><img src="./img/plus.svg" width="24" height="24"></i>
 				</button>
 			</div>
 			<button id="close-config-flags-menu">Back</button>
@@ -908,19 +930,19 @@
 						<td>No</td>
 					</tr>
 					<tr>
-						<td>Ymap</th>
+						<td>YMAP</th>
 						<td>Native map format used by GTA V/RDR2</td>
 						<td>Yes</td>
 						<td>Yes</td>
 					</tr>
 					<tr>
-						<td>Mlo</th>
+						<td>MLO</th>
 						<td>Native map format used by GTA V/RDR2</td>
 						<td>Yes</td>
 						<td>Yes</td>
 					</tr>
 					<tr>
-						<td>propplacer JSON</td>
+						<td>Propplacer JSON</td>
 						<td>RedEM:RP propplacer JSON database</td>
 						<td>Yes</td>
 						<td>No</td>

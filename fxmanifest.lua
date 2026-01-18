@@ -9,8 +9,8 @@ version '4'
 
 files {
 	'ui/index.html',
-	'ui/*.css',
-	'ui/*.js',
+	'ui/css/*.css',
+	'ui/js/*.js',
 	'ui/img/*.svg',
 	'ui/fonts/*.ttf',
 }
@@ -18,13 +18,25 @@ files {
 ui_page 'ui/index.html'
 
 server_scripts {
-	'server/*.lua',
+	'server/sv_main.lua',
+	'server/sv_version.lua',
 }
 
 client_scripts {
 	'@uiprompt/uiprompt.lua',
 	'client/slaxml.lua',
-	'client/client.lua',
+	'client/cl_permissions.lua', -- Permission structure first
+	'client/cl_utils.lua',       -- Utilities and Logger second
+	'client/cl_database.lua',    -- Database functions third
+	'client/cl_spawning.lua',    -- Spawning functions fourth
+	'client/cl_converters.lua',  -- Import/Export converters fifth
+	'client/callbacks/cl_callbacks_spawn.lua',
+	'client/callbacks/cl_callbacks_database.lua',
+	'client/callbacks/cl_callbacks_properties.lua',
+	'client/callbacks/cl_callbacks_save_load.lua',
+	'client/callbacks/cl_callbacks_utils.lua',
+	'client/cl_camera.lua',      -- Camera system
+	'client/cl_main.lua',        -- Main client code last
 	'data/rdr3/*.lua',
 }
 

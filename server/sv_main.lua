@@ -1,8 +1,4 @@
 RegisterNetEvent('spooner:init')
-RegisterNetEvent('spooner:toggle')
-RegisterNetEvent('spooner:openDatabaseMenu')
-RegisterNetEvent('spooner:openSaveDbMenu')
-
 AddEventHandler('spooner:init', function()
 	local permissions = {}
 
@@ -86,18 +82,21 @@ AddEventHandler('spooner:init', function()
 	TriggerClientEvent('spooner:init', source, permissions)
 end)
 
+RegisterNetEvent('spooner:toggle')
 AddEventHandler('spooner:toggle', function()
 	if IsPlayerAceAllowed(source, 'spooner.view') then
 		TriggerClientEvent('spooner:toggle', source)
 	end
 end)
 
+RegisterNetEvent('spooner:openDatabaseMenu')
 AddEventHandler('spooner:openDatabaseMenu', function()
 	if IsPlayerAceAllowed(source, 'spooner.view') then
 		TriggerClientEvent('spooner:openDatabaseMenu', source)
 	end
 end)
 
+RegisterNetEvent('spooner:openSaveDbMenu')
 AddEventHandler('spooner:openSaveDbMenu', function()
 	if IsPlayerAceAllowed(source, 'spooner.view') then
 		TriggerClientEvent('spooner:openSaveDbMenu', source)

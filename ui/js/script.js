@@ -32,6 +32,19 @@ const favouriteTypes = [
 
 var favourites = {};
 
+// Debounce function for search inputs (prevents lag while typing)
+function debounce(func, delay) {
+	var timeout;
+	return function() {
+		var context = this;
+		var args = arguments;
+		clearTimeout(timeout);
+		timeout = setTimeout(function() {
+			func.apply(context, args);
+		}, delay);
+	};
+}
+
 function sendMessage(name, params) {
 	return fetch('https://' + GetParentResourceName() + '/' + name, {
 		method: 'POST',
@@ -503,8 +516,6 @@ function addFavourite(selected) {
 	});
 
 	selected.className = 'object favourite';
-	selected.removeEventListener('contextmenu', nonFavouriteOnClick);
-	selected.addEventListener('contextmenu', favouriteOnClick);
 }
 
 function removeFavourite(selected) {
@@ -518,15 +529,15 @@ function removeFavourite(selected) {
 	});
 
 	selected.className = 'object';
-	selected.removeEventListener('contextmenu', favouriteOnClick);
-	selected.addEventListener('contextmenu', nonFavouriteOnClick);
 }
 
 function populatePedList(filter) {
 	var pedList = document.getElementById('ped-list');
 	var favsOnly = document.getElementById('favourite-peds').hasAttribute('data-active');
 
-	pedList.innerHTML = '';
+	pedList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	peds.forEach(name => {
 		var isFav = favourites.peds[name];
@@ -535,34 +546,18 @@ function populatePedList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', name);
 			div.setAttribute('data-favourite-type', 'peds');
 			div.setAttribute('data-favourite-name', name);
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				closePedMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			pedList.appendChild(div);
+			div.textContent = name;
+			fragment.appendChild(div);
 		}
 	});
+
+	pedList.appendChild(fragment);
 }
 
 function setPlayerModel(modelName) {
@@ -581,7 +576,9 @@ function populatePlayerModelList(filter) {
 	var pedList = document.getElementById('player-model-list');
 	var favsOnly = document.getElementById('favourite-player-models').hasAttribute('data-active');
 
-	pedList.innerHTML = '';
+	pedList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	peds.forEach(name => {
 		var isFav = favourites.playerModels[name];
@@ -590,49 +587,27 @@ function populatePlayerModelList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', name);
 			div.setAttribute('data-favourite-type', 'playerModels');
 			div.setAttribute('data-favourite-name', name);
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				pedList.querySelectorAll('.object').forEach(e => {
-					if (favourites.playerModels[e.getAttribute('data-model')]) {
-						e.className = 'object favourite';
-					} else {
-						e.className = 'object';
-					}
-				});
-				this.className = 'object selected';
-				setPlayerModel(this.getAttribute('data-model'));
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			pedList.appendChild(div);
+			div.textContent = name;
+			fragment.appendChild(div);
 		}
 	});
+
+	pedList.appendChild(fragment);
 }
 
 function populateVehicleList(filter) {
 	var vehicleList = document.getElementById('vehicle-list');
 	var favsOnly = document.getElementById('favourite-vehicles').hasAttribute('data-active');
 
-	vehicleList.innerHTML = '';
+	vehicleList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	vehicles.forEach(name => {
 		var isFav = favourites.vehicles[name];
@@ -641,41 +616,27 @@ function populateVehicleList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', name);
 			div.setAttribute('data-favourite-type', 'vehicles');
 			div.setAttribute('data-favourite-name', name);
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				closeVehicleMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			vehicleList.appendChild(div);
+			div.textContent = name;
+			fragment.appendChild(div);
 		}
 	});
+
+	vehicleList.appendChild(fragment);
 }
 
 function populateObjectList(filter) {
 	var objectList = document.getElementById('object-list');
 	var favsOnly = document.getElementById('favourite-objects').hasAttribute('data-active');
 
-	objectList.innerHTML = '';
+	// Use DocumentFragment for batch DOM insertion (huge performance gain)
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	objects.forEach(name => {
 		var isFav = favourites.objects[name];
@@ -684,65 +645,51 @@ function populateObjectList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', name);
 			div.setAttribute('data-favourite-type', 'objects');
 			div.setAttribute('data-favourite-name', name);
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				closeObjectMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			objectList.appendChild(div);
+			div.textContent = name; // textContent is faster than innerHTML
+			
+			fragment.appendChild(div);
 		}
 	});
+
+	// Single DOM update instead of thousands
+	objectList.textContent = '';
+	objectList.appendChild(fragment);
 }
 
 function populateSpooniList(filter) {
 	var spooniList = document.getElementById('spooni-list');
 
-	spooniList.innerHTML = '';
+	spooniList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	spooni.forEach(name => {
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
+			div.className = 'object';
 			div.setAttribute('data-model', name);
 			div.setAttribute('data-favourite-type', 'spooni');
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				closeSpooniMenu(this);
-			});
-
-
-			spooniList.appendChild(div);
+			div.textContent = name;
+			fragment.appendChild(div);
 		}
 	});
+
+	spooniList.appendChild(fragment);
 }
 
 function populateScenarioList(filter) {
 	var scenarioList = document.getElementById('scenario-list');
 	var favsOnly = document.getElementById('favourite-scenarios').hasAttribute('data-active');
 
-	scenarioList.innerHTML = '';
+	scenarioList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	scenarios.forEach(scenario => {
 		var isFav = favourites.scenarios[scenario];
@@ -751,41 +698,27 @@ function populateScenarioList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || scenario.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || scenario.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-scenario', scenario);
 			div.setAttribute('data-favourite-type', 'scenarios');
 			div.setAttribute('data-favourite-name', scenario);
-
-			div.innerHTML = scenario;
-
-			div.addEventListener('click', function(event) {
-				performScenario(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			scenarioList.appendChild(div);
+			div.textContent = scenario;
+			fragment.appendChild(div);
 		}
 	});
+
+	scenarioList.appendChild(fragment);
 }
 
 function populateWeaponList(filter) {
 	var weaponList = document.getElementById('weapon-list');
 	var favsOnly = document.getElementById('favourite-weapons').hasAttribute('data-active');
 
-	weaponList.innerHTML = '';
+	weaponList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	weapons.forEach(weapon => {
 		var isFav = favourites.weapons[weapon];
@@ -794,34 +727,18 @@ function populateWeaponList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || weapon.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || weapon.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', weapon);
 			div.setAttribute('data-favourite-type', 'weapons');
 			div.setAttribute('data-favourite-name', weapon);
-
-			div.innerHTML = weapon;
-
-			div.addEventListener('click', function(event) {
-				giveWeapon(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			weaponList.appendChild(div);
+			div.textContent = weapon;
+			fragment.appendChild(div);
 		}
 	});
+
+	weaponList.appendChild(fragment);
 }
 
 function populateAnimationList(filter) {
@@ -829,9 +746,9 @@ function populateAnimationList(filter) {
 	var animationMaxResults = parseInt(document.getElementById('animation-search-max-results').value);
 	var favsOnly = document.getElementById('favourite-animations').hasAttribute('data-active');
 
-	animationList.innerHTML = '';
-
+	animationList.textContent = '';
 	var results = [];
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	Object.keys(animations).forEach(dict => {
 		animations[dict].forEach(name => {
@@ -841,7 +758,7 @@ function populateAnimationList(filter) {
 				return;
 			}
 
-			if (!filter || filter == '' || label.toLowerCase().includes(filter.toLowerCase())) {
+			if (!filterLower || label.toLowerCase().includes(filterLower)) {
 				results.push({
 					label: label,
 					dict: dict,
@@ -861,45 +778,30 @@ function populateAnimationList(filter) {
 		return 0;
 	});
 
-	document.getElementById('animation-search-total-results').innerHTML = results.length;
+	document.getElementById('animation-search-total-results').textContent = results.length;
 
+	var fragment = document.createDocumentFragment();
 	for (var i = 0; i < results.length && i < animationMaxResults; ++i) {
 		var isFav = favourites.animations[results[i].label];
-
 		var div = document.createElement('div');
-
-		if (isFav) {
-			div.className = 'object favourite';
-		} else {
-			div.className = 'object';
-		}
-
+		div.className = isFav ? 'object favourite' : 'object';
 		div.setAttribute('data-dict', results[i].dict);
 		div.setAttribute('data-name', results[i].name);
 		div.setAttribute('data-favourite-type', 'animations');
 		div.setAttribute('data-favourite-name', results[i].label);
-
-		div.innerHTML = results[i].label;
-
-		div.addEventListener('click', function() {
-			playAnimation(this);
-		});
-
-		if (isFav) {
-			div.addEventListener('contextmenu', favouriteOnClick);
-		} else {
-			div.addEventListener('contextmenu', nonFavouriteOnClick);
-		}
-
-		animationList.appendChild(div);
+		div.textContent = results[i].label;
+		fragment.appendChild(div);
 	}
+	animationList.appendChild(fragment);
 }
 
 function populatePropsetList(filter) {
 	var propsetList = document.getElementById('propset-list');
 	var favsOnly = document.getElementById('favourite-propsets').hasAttribute('data-active');
 
-	propsetList.innerHTML = '';
+	propsetList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	propsets.forEach(propset => {
 		var isFav = favourites.propsets[propset];
@@ -908,41 +810,27 @@ function populatePropsetList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || propset.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || propset.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', propset);
 			div.setAttribute('data-favourite-type', 'propsets');
 			div.setAttribute('data-favourite-name', propset);
-
-			div.innerHTML = propset;
-
-			div.addEventListener('click', function(event) {
-				closePropsetMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			propsetList.appendChild(div);
+			div.textContent = propset;
+			fragment.appendChild(div);
 		}
 	});
+
+	propsetList.appendChild(fragment);
 }
 
 function populatePickupList(filter) {
 	var pickupList = document.getElementById('pickup-list');
 	var favsOnly = document.getElementById('favourite-pickups').hasAttribute('data-active');
 
-	pickupList.innerHTML = '';
+	pickupList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	pickups.forEach(pickup => {
 		var isFav = favourites.pickups[pickup];
@@ -951,34 +839,18 @@ function populatePickupList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || pickup.toLowerCase().includes(filter.toLowerCase())) {
+		if (!filterLower || pickup.toLowerCase().includes(filterLower)) {
 			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
+			div.className = isFav ? 'object favourite' : 'object';
 			div.setAttribute('data-model', pickup);
 			div.setAttribute('data-favourite-type', 'pickups');
 			div.setAttribute('data-favourite-name', pickup);
-
-			div.innerHTML = pickup;
-
-			div.addEventListener('click', function(event) {
-				closePickupMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			pickupList.appendChild(div);
+			div.textContent = pickup;
+			fragment.appendChild(div);
 		}
 	});
+
+	pickupList.appendChild(fragment);
 }
 
 function populateBoneNameList() {
@@ -986,19 +858,23 @@ function populateBoneNameList() {
 
 	boneList.innerHTML = '<option></option>';
 
+	var fragment = document.createDocumentFragment();
 	bones.forEach(bone => {
 		var option = document.createElement('option');
 		option.value = bone;
-		option.innerHTML = bone;
-		boneList.appendChild(option);
+		option.textContent = bone;
+		fragment.appendChild(option);
 	});
+	boneList.appendChild(fragment);
 }
 
 function populateWalkStyleList(filter) {
 	var walkStyleList = document.getElementById('walk-style-list');
 	var favsOnly = document.getElementById('favourite-walk-styles').hasAttribute('data-active');
 
-	walkStyleList.innerHTML = '';
+	walkStyleList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	walkStyleBases.forEach(base => {
 		walkStyles.forEach(style => {
@@ -1009,36 +885,20 @@ function populateWalkStyleList(filter) {
 				return;
 			}
 
-			if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
+			if (!filterLower || name.toLowerCase().includes(filterLower)) {
 				var div = document.createElement('div');
-
-				if (isFav) {
-					div.className = 'object favourite';
-				} else {
-					div.className = 'object';
-				}
-
+				div.className = isFav ? 'object favourite' : 'object';
 				div.setAttribute('data-base', base);
 				div.setAttribute('data-style', style);
 				div.setAttribute('data-favourite-type', 'walkStyles');
 				div.setAttribute('data-favourite-name', name);
-
-				div.innerHTML = name;
-
-				div.addEventListener('click', function(event) {
-					setWalkStyle(this);
-				});
-
-				if (isFav) {
-					div.addEventListener('contextmenu', favouriteOnClick);
-				} else {
-					div.addEventListener('contextmenu', nonFavouriteOnClick);
-				}
-
-				walkStyleList.appendChild(div);
+				div.textContent = name;
+				fragment.appendChild(div);
 			}
 		});
 	});
+
+	walkStyleList.appendChild(fragment);
 }
 
 function deleteEntity(object) {
@@ -1081,7 +941,9 @@ function openDatabase(data,filter) {
 	var totalSpooni = 0;
 	var totalNetworked = 0;
 
-	objectList.innerHTML = '';
+	objectList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	keys.forEach(function(handle) {
 		var entityId = parseInt(handle);
@@ -1105,9 +967,8 @@ function openDatabase(data,filter) {
 			++totalNetworked;
 		}
 
-		if (!filter || 
-			filter == '' || 
-			database[handle].name.toLowerCase().includes(filter.toLowerCase()) || 
+		if (!filterLower || 
+			database[handle].name.toLowerCase().includes(filterLower) || 
 			handle.includes(filter)) {
 			var div = document.createElement('div');
 
@@ -1119,21 +980,13 @@ function openDatabase(data,filter) {
 				div.className = 'object'
 			}
 	
-			div.innerHTML = entityDisplayName(entityId, database[handle]);
-	
+			div.textContent = entityDisplayName(entityId, database[handle]);
 			div.setAttribute('data-handle', handle);
-			div.addEventListener('click', function(event) {
-				document.querySelector('#object-database').style.display = 'none';
-				sendMessage('openPropertiesMenuForEntity', {
-					entity: entityId
-				});
-			});
-			div.addEventListener('contextmenu', function(event) {
-				deleteEntity(this);
-			});
-			objectList.appendChild(div);
+			fragment.appendChild(div);
 		}
 	});
+
+	objectList.appendChild(fragment);
 
 	document.getElementById('object-database-total-entities').innerHTML = keys.length;
 	document.getElementById('object-database-total-peds').innerHTML = totalPeds;
@@ -1357,29 +1210,37 @@ function loadDatabase(name) {
 	});
 }
 
-function updateDbList(data) {
-	var databaseNames = JSON.parse(data);
+var cachedDatabaseNames = [];
+
+function updateDbList(data, filter) {
+	var databaseNames = typeof data === 'string' ? JSON.parse(data) : data;
+	cachedDatabaseNames = databaseNames;
 	var dbList = document.querySelector('#db-list');
 
-	dbList.innerHTML = '';
+	dbList.textContent = '';
+	var fragment = document.createDocumentFragment();
+	var filterLower = filter ? filter.toLowerCase() : '';
 
 	databaseNames.forEach(function(name) {
-		var div = document.createElement('div');
-		div.className = 'database';
-		div.innerHTML = name;
-		div.addEventListener('click', function(event) {
-			loadDatabase(this.innerHTML);
-		});
-		div.addEventListener('contextmenu', function(event) {
-			document.querySelector('#delete-db-prompt').style.display = 'flex';
-			currentDeletionSelection = this;
-		});
-		dbList.appendChild(div);
+		if (!filterLower || name.toLowerCase().includes(filterLower)) {
+			var div = document.createElement('div');
+			div.className = 'database';
+			div.textContent = name;
+			div.setAttribute('data-db-name', name);
+			fragment.appendChild(div);
+		}
 	});
+
+	dbList.appendChild(fragment);
+}
+
+function filterDbList(filter) {
+	updateDbList(cachedDatabaseNames, filter);
 }
 
 function openSaveLoadDbMenu(databaseNames) {
-	updateDbList(databaseNames)
+	document.getElementById('db-search-filter').value = '';
+	updateDbList(databaseNames);
 	document.querySelector('#save-load-db-menu').style.display = 'flex';
 }
 
@@ -1780,32 +1641,326 @@ window.addEventListener('load', function() {
 		document.querySelectorAll('.rotate-input').forEach(e => e.step = resp.rotateSpeed);
 	});
 
-	document.querySelector('#ped-search-filter').addEventListener('input', function(event) {
+	// Event Delegation für Object List
+	var objectListEl = document.querySelector('#object-list');
+	if (objectListEl) {
+		objectListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closeObjectMenu(target);
+			}
+		});
+		objectListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Ped List
+	var pedListEl = document.querySelector('#ped-list');
+	if (pedListEl) {
+		pedListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closePedMenu(target);
+			}
+		});
+		pedListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Vehicle List
+	var vehicleListEl = document.querySelector('#vehicle-list');
+	if (vehicleListEl) {
+		vehicleListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closeVehicleMenu(target);
+			}
+		});
+		vehicleListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Database List
+	var objectDatabaseListEl = document.querySelector('#object-database-list');
+	if (objectDatabaseListEl) {
+		objectDatabaseListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				var handle = target.getAttribute('data-handle');
+				if (handle) {
+					document.querySelector('#object-database').style.display = 'none';
+					sendMessage('openPropertiesMenuForEntity', {
+						entity: parseInt(handle)
+					});
+				}
+			}
+		});
+		objectDatabaseListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				deleteEntity(target);
+			}
+		});
+	}
+
+	// Event Delegation für Animation List
+	var animationListEl = document.querySelector('#animation-list');
+	if (animationListEl) {
+		animationListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				playAnimation(target);
+			}
+		});
+		animationListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Propset List
+	var propsetListEl = document.querySelector('#propset-list');
+	if (propsetListEl) {
+		propsetListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closePropsetMenu(target);
+			}
+		});
+		propsetListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Pickup List
+	var pickupListEl = document.querySelector('#pickup-list');
+	if (pickupListEl) {
+		pickupListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closePickupMenu(target);
+			}
+		});
+		pickupListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Spooni List
+	var spooniListEl = document.querySelector('#spooni-list');
+	if (spooniListEl) {
+		spooniListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				closeSpooniMenu(target);
+			}
+		});
+	}
+
+	// Event Delegation für Scenario List
+	var scenarioListEl = document.querySelector('#scenario-list');
+	if (scenarioListEl) {
+		scenarioListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				performScenario(target);
+			}
+		});
+		scenarioListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Weapon List
+	var weaponListEl = document.querySelector('#weapon-list');
+	if (weaponListEl) {
+		weaponListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				giveWeapon(target);
+			}
+		});
+		weaponListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Player Model List
+	var playerModelListEl = document.querySelector('#player-model-list');
+	if (playerModelListEl) {
+		playerModelListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				var modelName = target.getAttribute('data-model');
+				if (modelName) {
+					playerModelListEl.querySelectorAll('.object').forEach(e => {
+						if (favourites.playerModels[e.getAttribute('data-model')]) {
+							e.className = 'object favourite';
+						} else {
+							e.className = 'object';
+						}
+					});
+					target.className = 'object selected';
+					setPlayerModel(modelName);
+				}
+			}
+		});
+		playerModelListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Walk Style List
+	var walkStyleListEl = document.querySelector('#walk-style-list');
+	if (walkStyleListEl) {
+		walkStyleListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				setWalkStyle(target);
+			}
+		});
+		walkStyleListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.object');
+			if (target) {
+				event.preventDefault();
+				if (target.classList.contains('favourite')) {
+					favouriteOnClick.call(target, event);
+				} else {
+					nonFavouriteOnClick.call(target, event);
+				}
+			}
+		});
+	}
+
+	// Event Delegation für Database List
+	var dbListEl = document.querySelector('#db-list');
+	if (dbListEl) {
+		dbListEl.addEventListener('click', function(event) {
+			var target = event.target.closest('.database');
+			if (target) {
+				var dbName = target.getAttribute('data-db-name');
+				if (dbName) {
+					loadDatabase(dbName);
+				}
+			}
+		});
+		dbListEl.addEventListener('contextmenu', function(event) {
+			var target = event.target.closest('.database');
+			if (target) {
+				event.preventDefault();
+				document.querySelector('#delete-db-prompt').style.display = 'flex';
+				currentDeletionSelection = target;
+			}
+		});
+	}
+
+	// Debounced search inputs (250ms delay prevents lag while typing)
+	document.querySelector('#ped-search-filter').addEventListener('input', debounce(function(event) {
 		populatePedList(this.value);
-	});
+	}, 250));
 
-	document.querySelector('#player-model-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#player-model-search-filter').addEventListener('input', debounce(function(event) {
 		populatePlayerModelList(this.value);
-	});
+	}, 250));
 
-	document.querySelector('#vehicle-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#vehicle-search-filter').addEventListener('input', debounce(function(event) {
 		populateVehicleList(this.value);
-	});
+	}, 250));
 
-	document.querySelector('#object-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#object-search-filter').addEventListener('input', debounce(function(event) {
 		populateObjectList(this.value);
-	});
-	document.querySelector('#spooni-search-filter').addEventListener('input', function(event) {
-		populateSpooniList(this.value);
-	});
-
-	document.getElementById('propset-search-filter').addEventListener('input', function(event) {
-		populatePropsetList(this.value);
-	});
+	}, 250));
 	
-	document.getElementById('object-database-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#spooni-search-filter').addEventListener('input', debounce(function(event) {
+		populateSpooniList(this.value);
+	}, 250));
+
+	document.getElementById('propset-search-filter').addEventListener('input', debounce(function(event) {
+		populatePropsetList(this.value);
+	}, 250));
+	
+	document.getElementById('object-database-search-filter').addEventListener('input', debounce(function(event) {
 		openDatabase(currentData,this.value);
-	});
+	}, 250));
+
+	document.getElementById('db-search-filter').addEventListener('input', debounce(function(event) {
+		filterDbList(this.value);
+	}, 250));
 
 	document.querySelector('#ped-spawn-by-name').addEventListener('click', function(event) {
 		document.querySelector('#ped-menu').style.display = 'none';
@@ -2205,9 +2360,9 @@ window.addEventListener('load', function() {
 		document.querySelector('#ped-options-menu').style.display = 'flex';
 	});
 
-	document.querySelector('#scenario-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#scenario-search-filter').addEventListener('input', debounce(function(event) {
 		populateScenarioList(this.value);
-	});
+	}, 250));
 
 	document.querySelector('#properties-clear-ped-tasks').addEventListener('click', function(event) {
 		sendMessage('clearPedTasks', {
@@ -2277,9 +2432,9 @@ window.addEventListener('load', function() {
 		document.querySelector('#weapon-menu').style.display = 'flex';
 	});
 
-	document.querySelector('#weapon-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#weapon-search-filter').addEventListener('input', debounce(function(event) {
 		populateWeaponList(this.value);
-	});
+	}, 250));
 
 	document.querySelector('#properties-remove-all-weapons').addEventListener('click', function(event) {
 		sendMessage('removeAllWeapons', {
@@ -2377,17 +2532,17 @@ window.addEventListener('load', function() {
 		document.querySelector('#ped-options-menu').style.display = 'flex';
 	});
 
-	document.querySelector('#animation-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#animation-search-filter').addEventListener('input', debounce(function(event) {
 		populateAnimationList(this.value);
-	});
+	}, 250));
 
-	document.querySelector('#animation-search-max-results').addEventListener('input', function(event) {
+	document.querySelector('#animation-search-max-results').addEventListener('input', debounce(function(event) {
 		populateAnimationList(document.querySelector('#animation-search-filter').value)
-	});
+	}, 250));
 
-	document.querySelector('#pickup-search-filter').addEventListener('input', function(event) {
+	document.querySelector('#pickup-search-filter').addEventListener('input', debounce(function(event) {
 		populatePickupList(this.value);
-	});
+	}, 250));
 
 	document.getElementById('properties-player-model').addEventListener('click', function(event) {
 		document.querySelector('#ped-options-menu').style.display = 'none';
@@ -2400,9 +2555,9 @@ window.addEventListener('load', function() {
 		});
 	});
 
-	document.getElementById('walk-style-search-filter').addEventListener('input', function(event) {
+	document.getElementById('walk-style-search-filter').addEventListener('input', debounce(function(event) {
 		populateWalkStyleList(this.value);
-	});
+	}, 250));
 
 	document.getElementById('properties-walk-style').addEventListener('click', function(event) {
 		document.getElementById('ped-options-menu').style.display = 'none';

@@ -14,7 +14,7 @@ local resourcename = GetCurrentResourceName()
 local version = GetResourceMetadata(resourcename, "version", 0)
 local isMapping = false
 local escrow = false
-local updateUrl = 'https://raw.githubusercontent.com/Spooni-Development/spooni_updates/refs/heads/main/scripts/spooni_spooner.json'
+local updateUrl = 'https://raw.githubusercontent.com/Spooni-Development/spooni_updates/main/scripts/spooni_spooner.json'
 
 Citizen.CreateThread(function()
     Wait(5000)
@@ -43,7 +43,7 @@ Citizen.CreateThread(function()
             else
                 print('^4' .. resourcename .. ' ^8VERSION MISMATCH!^0')
             end
-            print('^8Current: ^3' .. version .. '^8 ^3|^8 Latest: ^3' .. data.version .. '^0')
+            print('^8Current: ^3' .. version .. '^0 | ^8Latest: ^3' .. data.version .. '^0')
             if escrow == true then
                 print('^8Download: ^3https://keymaster.fivem.net^0')
             else

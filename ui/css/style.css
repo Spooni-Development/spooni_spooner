@@ -1,0 +1,881 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@font-face {
+	font-family: "212 Keyboard";
+	src: url("../fonts/keyboard.ttf");
+}
+
+:root {
+	/* Color Variables */
+	--bg-primary: rgba(20, 22, 26, 0.90);
+	--bg-secondary: rgba(25, 27, 31, 0.85);
+	--bg-button: rgba(75, 80, 88, 0.95);
+	--bg-hover: rgba(255, 255, 255, 0.15);
+	--bg-active: rgba(150, 40, 40, 0.8);
+	--text-primary: white;
+	--text-disabled: #444;
+	--border-primary: white;
+	--border-disabled: #444;
+	--accent-color: #d00;
+	--danger-color: rgba(150, 40, 40, 0.9);
+	--success-color: #0f0;
+	--info-color: #0ff;
+	
+	/* Spacing Variables */
+	--border-radius-sm: 5px;
+	--border-radius-md: 10px;
+	--padding-sm: 0.25vh 0.25vw;
+	--padding-md: 0.5vh 0.5vw;
+	--padding-lg: 1vh 1vw;
+	
+	/* Font Sizes */
+	--font-size-xs: clamp(9px, 1.1vh, 14px);
+	--font-size-sm: clamp(10px, 1.3vh, 16px);
+	--font-size-md: clamp(12px, 1.6vh, 18px);
+	--font-size-lg: clamp(14px, 1.75vh, 20px);
+	--font-size-xl: clamp(16px, 2.2vh, 24px);
+	
+	/* Touch Target Size */
+	--touch-target-min: 44px;
+}
+
+* {
+	font-size: inherit;
+	font-family: inherit;
+	user-select: none;
+	color: inherit;
+}
+
+::selection {
+	background-color: var(--accent-color);
+}
+
+*:focus {
+	outline: none;
+}
+
+html,
+body {
+	background: none;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	overflow: auto;
+	font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+button {
+	background-color: var(--bg-button);
+	color: var(--text-primary);
+	border: 1px solid transparent;
+	font-size: var(--font-size-lg);
+	border-radius: var(--border-radius-md);
+	font-family: 'Space Grotesk', sans-serif;
+	font-weight: 500;
+	padding: 0.25vh 0.5vw;
+	cursor: pointer;
+}
+
+#copy-position,
+#copy-rotation,
+#copy-attachment-position,
+#copy-attachment-rotation {
+	border-radius: var(--border-radius-md);
+}
+
+#ped-spawn-by-name,
+#vehicle-spawn-by-name,
+#object-spawn-by-name,
+#animation-stop,
+#propset-spawn-by-name,
+#pickup-spawn-by-name,
+#spooni-spawn-by-name,
+#player-model-spawn-by-name,
+#scenario-stop,
+#import-export-db-btn,
+#yes-delete-db,
+#properties-lights-red,
+#add-to-db-btn {
+	border-radius: var(--border-radius-md);
+}
+
+#export-db {
+	border-radius: var(--border-radius-md);
+}
+
+#import-export-db-close,
+#ped-menu-close-btn,
+#vehicle-menu-close-btn,
+#object-menu-close-btn,
+#propset-menu-close-btn,
+#pickup-menu-close-btn,
+#spooni-menu-close-btn,
+#animation-menu-close,
+#save-load-db-menu-close-btn,
+#object-database-close-btn,
+#scenario-menu-close,
+#player-model-menu-close-btn,
+#no-delete-db,
+#properties-lights-blue {
+	border-radius: var(--border-radius-md);
+}
+
+#object-database-delete-all-btn {
+	border-radius: var(--border-radius-md);
+}
+
+#favourite-peds,
+#favourite-scenarios,
+#favourite-vehicles,
+#favourite-animations,
+#favourite-objects,
+#favourite-propsets,
+#favourite-player-models,
+#favourite-pickups,
+#favourite-spooni,
+#favourite-weapons,
+#favourite-walk-styles,
+#copy-model-name {
+	margin-left: 0.5vh;
+	border: 1px solid transparent;
+}
+
+/* Danger/Important Buttons */
+#import-export-db-close,
+#ped-menu-close-btn,
+#vehicle-menu-close-btn,
+#object-menu-close-btn,
+#propset-menu-close-btn,
+#pickup-menu-close-btn,
+#spooni-menu-close-btn,
+#animation-menu-close,
+#save-load-db-menu-close-btn,
+#object-database-close-btn,
+#scenario-menu-close,
+#player-model-menu-close-btn,
+#help-menu-close-btn,
+#add-to-db-menu-close,
+#object-database-delete-all-btn,
+#yes-delete-db,
+#attachment-options-detach,
+#spawn-menu-close,
+#properties-menu-close-btn,
+#properties-delete,
+#attachment-options-menu-close,
+#lights-options-menu-close,
+#ped-options-menu-close,
+#walk-style-menu-close,
+#weapon-menu-close,
+#vehicle-options-menu-close {
+	background-color: var(--danger-color);
+}
+
+#import-export-db-close:hover:enabled,
+#ped-menu-close-btn:hover:enabled,
+#vehicle-menu-close-btn:hover:enabled,
+#object-menu-close-btn:hover:enabled,
+#propset-menu-close-btn:hover:enabled,
+#pickup-menu-close-btn:hover:enabled,
+#spooni-menu-close-btn:hover:enabled,
+#animation-menu-close:hover:enabled,
+#save-load-db-menu-close-btn:hover:enabled,
+#object-database-close-btn:hover:enabled,
+#scenario-menu-close:hover:enabled,
+#player-model-menu-close-btn:hover:enabled,
+#help-menu-close-btn:hover:enabled,
+#add-to-db-menu-close:hover:enabled,
+#object-database-delete-all-btn:hover:enabled,
+#yes-delete-db:hover:enabled,
+#attachment-options-detach:hover:enabled,
+#spawn-menu-close:hover:enabled,
+#properties-menu-close-btn:hover:enabled,
+#properties-delete:hover:enabled,
+#attachment-options-menu-close:hover:enabled,
+#lights-options-menu-close:hover:enabled,
+#ped-options-menu-close:hover:enabled,
+#walk-style-menu-close:hover:enabled,
+#weapon-menu-close:hover:enabled,
+#vehicle-options-menu-close:hover:enabled {
+	background-color: rgba(180, 50, 50, 0.9);
+}
+
+/* Critical Delete Buttons - Stronger Red Warning */
+#properties-delete,
+#object-database-delete-all-btn,
+#yes-delete-db {
+	background-color: rgba(220, 20, 20, 1) !important;
+	font-weight: 600;
+}
+
+#properties-delete:hover:enabled,
+#object-database-delete-all-btn:hover:enabled,
+#yes-delete-db:hover:enabled {
+	background-color: rgba(255, 40, 40, 1) !important;
+}
+
+#properties-delete:active:enabled,
+#object-database-delete-all-btn:active:enabled,
+#yes-delete-db:active:enabled {
+	background-color: rgba(180, 10, 10, 1) !important;
+}
+
+button:hover:enabled,
+button:focus:enabled {
+	background-color: var(--bg-hover);
+}
+
+button:active:enabled {
+	background-color: var(--bg-active);
+	color: var(--text-primary);
+}
+
+button:disabled {
+	color: var(--text-disabled);
+	border: 1px solid var(--border-disabled);
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+input {
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	border: 1px solid rgba(150, 150, 150, 0.6);
+	border-radius: 0;
+	padding: 0.25vh 0.5vw;
+	font-size: var(--font-size-sm);
+}
+
+input:focus {
+	border-color: var(--accent-color);
+	background-color: var(--bg-primary);
+}
+
+input[type="checkbox"] {
+	appearance: none;
+	background: var(--bg-secondary);
+	height: 1vw;
+	width: 1vw;
+	border: 1px solid rgba(150, 150, 150, 0.6);
+	vertical-align: middle;
+	/* border-radius: var(--border-radius-sm); */
+	cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+	background: var(--bg-active);
+}
+
+input:disabled {
+	color: var(--text-disabled);
+	border: 1px solid var(--border-disabled);
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+#hud {
+	display: none;
+	font-size: var(--font-size-sm);
+}
+
+#info {
+	text-align: center;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+#crosshair {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 3.5vh;
+	color: white;
+	font-family: Times;
+}
+
+#crosshair.active {
+	color: #0f0;
+}
+
+#crosshair.attached {
+	color: #0ff;
+}
+
+#info {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translate(-50%, 0);
+	color: white;
+}
+
+#controls {
+	display: flex;
+	justify-content: center;
+	font-size: var(--font-size-xs);
+	padding: var(--padding-sm);
+	margin-top: 1vh;
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+}
+
+.control-set,
+.control-and-help {
+	display: flex;
+	align-items: center;
+}
+
+.control-and-help {
+	padding: 0 0.25vw;
+}
+
+.control-help {
+	padding-left: 0.25vw;
+}
+
+#cam-cursor-info {
+	position: absolute;
+	top: 50%;
+	left: 1%;
+	transform: translate(0, -50%);
+	color: white;
+}
+
+#cursor-info {
+	margin-top: 1vh;
+}
+
+.menu {
+	display: none;
+	position: absolute;
+	top: 48%;
+	right: 1%;
+	height: 93%;
+	transform: translate(0, -50%);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--font-size-md);
+	padding: var(--padding-md);
+	flex-flow: column;
+	min-width: clamp(280px, 18vw, 450px);
+	max-width: 90vw;
+	overflow: auto;
+	border-radius: var(--border-radius-md);
+}
+
+.menu > button {
+	margin-bottom: 0.5vh;
+}
+
+.menu > button:last-child {
+	margin-bottom: 0;
+}
+
+#spawn-categories {
+	padding: 1vh 0;
+	display: flex;
+	flex-flow: column;
+	flex-grow: 1;
+}
+
+.spawn-category {
+	padding: 0.25vh 0;
+	margin-bottom: 0.5vh;
+}
+
+.spawn-category button {
+	width: 100%;
+}
+
+.search {
+	display: flex;
+}
+
+.search-filter {
+	flex-grow: 1;
+	border: 1px solid rgba(150, 150, 150, 0.6);
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	border-radius: 0;
+	padding: 0.25vh 0.5vw;
+	font-size: var(--font-size-sm);
+}
+
+.search-filter::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+	font-style: italic;
+}
+
+.list {
+	flex-grow: 1;
+	overflow: auto;
+	padding: 0.5vh 0.25vw 0.5vh 0;
+	contain: strict;
+	will-change: scroll-position;
+}
+
+::-webkit-scrollbar {
+	background: rgba(0, 0, 0, 0.3);
+	border-radius: var(--border-radius-md);
+	width: 12px;
+	height: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, 0.6);
+	border-radius: var(--border-radius-md);
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(255, 255, 255, 0.9);
+}
+
+.object {
+	padding: 0.25vh 0.5vw;
+	cursor: pointer;
+	contain: layout style paint;
+	will-change: auto;
+}
+
+.object:hover {
+	background-color: var(--bg-hover);
+	border-radius: var(--border-radius-md);
+}
+
+.object.selected {
+	background-color: var(--bg-active);
+	color: var(--text-primary);
+	border-radius: var(--border-radius-md);
+}
+
+.object.favourite {
+	background-color: rgba(255, 215, 0, 0.3);
+	border-left: 3px solid gold;
+}
+
+.self {
+	background-color: rgba(0, 0, 255, 0.3);
+}
+
+.invalid {
+	background-color: rgba(255, 0, 0, 0.3);
+}
+
+#properties-menu .label,
+#properties-menu .value {
+	display: inline;
+}
+
+#properties-menu .label::after {
+	content: ": ";
+}
+
+#properties-model-container {
+	display: flex;
+	gap: 1em;
+}
+
+.property {
+	padding: 0.5vh 0;
+	margin-bottom: 0.5vh;
+}
+
+.property.multiple {
+	display: flex;
+	gap: 2%;
+}
+
+.property label {
+	display: block;
+	font-size: var(--font-size-xs);
+	margin-bottom: 0.25vh;
+}
+
+.property button {
+	display: block;
+	width: 100%;
+	white-space: nowrap;
+}
+
+.property input {
+	display: block;
+	width: 100%;
+	border-radius: 0;
+	padding: 0.35vh 0.6vw;
+	font-size: var(--font-size-sm);
+}
+
+.add-remove-db {
+	display: none;
+}
+
+#load-db-options,
+#save-db-options {
+	padding: 1.5vh 0;
+}
+
+#save-db-options {
+	display: flex;
+}
+
+#save-db-name {
+	flex-grow: 1;
+	/* border-radius: 5px 0 0 5px; */
+}
+
+#save-db-btn {
+	/* border-radius: 0 5px 5px 0; */
+	margin-left: 0.5vh;
+}
+
+.database {
+	padding: 0.25vh 0.25vw;
+	margin-bottom: 0.5vh;
+}
+
+.database:hover {
+	background-color: white;
+	color: black;
+	border-radius: 10px;
+}
+
+#help-menu {
+	display: none;
+	flex-flow: column;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	padding: var(--padding-md);
+	font-size: var(--font-size-sm);
+	max-height: 95%;
+	max-width: 90vw;
+	width: clamp(400px, 60vw, 1200px);
+	border-radius: var(--border-radius-md);
+}
+
+#help-content {
+	flex-grow: 1;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+	padding: 0 0.5vw;
+}
+
+td {
+	text-align: left;
+	vertical-align: middle;
+	padding: 0.5vh 0.5vw;
+}
+
+#help-menu-controls {
+	padding: 0.5vh 0;
+}
+
+#help-menu-close-btn {
+	width: 100%;
+	font-size: 2vh;
+}
+
+h1 {
+	font-size: 3vh;
+	color: #b00;
+	font-weight: 600;
+	font-family: 'Space Grotesk', sans-serif;
+}
+
+h2 {
+	font-size: 2.5vh;
+	font-weight: 600;
+	font-family: 'Space Grotesk', sans-serif;
+}
+
+h3 {
+	font-size: 2vh;
+	font-weight: 600;
+	font-family: 'Space Grotesk', sans-serif;
+}
+
+strong {
+	color: #b00;
+}
+
+.control {
+	font-family: "212 Keyboard";
+	font-size: 4vh;
+}
+
+#import-export-db {
+	display: none;
+	flex-flow: column;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 60%;
+	height: 60%;
+	color: white;
+	border-radius: 10px;
+	background-color: var(--bg-primary);
+	padding: var(--padding-md);
+	gap: 1vh;
+}
+
+#import-export-controls {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	gap: 0.5vh 0.5vw;
+	width: 100%;
+}
+
+#import-export-controls button {
+	grid-column: span 1;
+}
+
+select {
+	background: var(--bg-button);
+	color: var(--text-primary);
+	border: 1px solid rgba(150, 150, 150, 0.6);
+	border-radius: 0;
+	padding: 0.25vh 0.5vw;
+	font-size: var(--font-size-lg);
+	font-family: 'Space Grotesk', sans-serif;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+select:hover {
+	background-color: var(--bg-hover);
+}
+
+select:focus {
+	background-color: var(--bg-primary);
+	border-color: var(--accent-color);
+	outline: none;
+}
+
+#import-export-format {
+	grid-column: 1;
+}
+
+#import-url {
+	grid-column: 2;
+	border-radius: 0;
+}
+
+option {
+	background-color: #000;
+}
+
+textarea {
+	width: 100%;
+	flex-grow: 1;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	resize: none;
+	border: 1px solid var(--border-primary);
+	border-radius: 0;
+	padding: var(--padding-md);
+	font-size: var(--font-size-sm);
+	font-family: 'Courier New', monospace;
+	line-height: 1.5;
+}
+
+textarea:focus {
+	border-color: var(--accent-color);
+}
+
+.attachment-option {
+	padding: 0.5vh 0;
+	margin-bottom: 0.5vh;
+}
+
+#attachment-bone-container {
+	display: flex;
+	gap: 15px;
+}
+
+.labelled-input-group {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-gap: 0.5vh 0.5vw;
+}
+
+.labelled-input {
+	display: contents;
+}
+
+.labelled-input .input-label {
+	display: flex;
+	font-size: 1.25vh;
+	align-items: center;
+}
+
+.copy-button {
+	grid-column: 2;
+	padding: 0.2vh 0.3vw;
+	min-width: auto;
+	width: auto !important;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.copy-button img {
+	width: 24px;
+	height: 24px;
+}
+
+#object-database-stats {
+	font-size: 1.25vh;
+	border-bottom: 1px solid white;
+}
+
+.object-database-stat {
+	display: inline-block;
+}
+
+.arrow-keys {
+	display: inline-grid;
+	grid-template-columns: repeat(3, max-content);
+	font-family: "212 Keyboard";
+}
+
+.arrow-keys div:first-child {
+	grid-column: 1 / 4;
+}
+
+#config-flags-list {
+	display: grid;
+	grid-template-columns: max-content auto max-content;
+	grid-gap: 0.5vh 0.5vw;
+	text-align: right;
+}
+
+.add-config-flag-container {
+	display: flex;
+}
+
+.config-flag {
+	display: contents;
+}
+
+.config-flag.off {
+	color: #555;
+}
+
+#config-flag-label {
+	padding-right: 0.25vw;
+}
+
+.config-flag-set button {
+	border: none;
+}
+
+#config-flag {
+	flex-grow: 1;
+}
+
+#add-to-db-options {
+	flex-grow: 1;
+	margin-bottom: 1vh;
+}
+
+#delete-db-prompt {
+	display: none;
+	flex-flow: column;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 15%;
+	color: white;
+}
+
+#offset-db-prompt {
+	display: none;
+	flex-flow: column;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 15%;
+	color: white;
+}
+
+/* Accordion Sections */
+.property-section {
+	margin: 1vh 0;
+	border: none;
+	border-radius: var(--border-radius-md);
+	background-color: rgba(50, 53, 60, 0.5);
+	overflow: hidden;
+}
+
+.property-section[open] {
+	background-color: rgba(50, 53, 60, 0.85);
+}
+
+.section-header {
+	font-family: 'Space Grotesk', sans-serif;
+	font-size: var(--font-size-lg);
+	font-weight: 500;
+	padding: 0.75vh 0.5vw;
+	cursor: pointer;
+	background-color: rgba(65, 70, 78, 1);
+	color: var(--text-primary);
+	border-radius: var(--border-radius-md);
+	user-select: none;
+	list-style: none;
+	display: flex;
+	align-items: center;
+}
+
+.section-header::-webkit-details-marker,
+.section-header::marker {
+	display: none;
+}
+
+.section-header::before {
+	content: "▶";
+	display: inline-block;
+	margin-right: 0.5vw;
+	font-size: var(--font-size-sm);
+}
+
+.property-section[open] > .section-header::before {
+	transform: rotate(90deg);
+}
+
+.section-header:hover {
+	background-color: var(--bg-hover);
+}
+
+.section-header:active {
+	background-color: var(--bg-active);
+}
+
+.section-content {
+	padding: 0.5vh 0.5vw;
+}
+
+.section-content .property:last-child {
+	margin-bottom: 0;
+}
+
+/* Buttons in sections need better contrast */
+.section-content button {
+	background-color: rgba(95, 100, 110, 1);
+}
+
+.section-content button:hover:enabled {
+	background-color: rgba(115, 120, 130, 1);
+}
+
+.section-content button:active:enabled {
+	background-color: var(--bg-active);
+}
