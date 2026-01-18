@@ -32,22 +32,24 @@ Citizen.CreateThread(function()
         end
         
         if tonumber(version) == tonumber(data.version) then
+            local betaNotice = ' ^1[BETA VERSION]^0'
             if isMapping == true then
-                print('^3' .. resourcename .. ' ^2is up to date!^0')
+                print('^3' .. resourcename .. ' ^2is up to date!^0' .. betaNotice)
             else
-                print('^4' .. resourcename .. ' ^2is up to date!^0')
+                print('^4' .. resourcename .. ' ^2is up to date!^0' .. betaNotice)
             end
         else
+            local betaNotice = ' ^1[BETA VERSION]^0'
             if isMapping == true then
-                print('^3' .. resourcename .. ' ^8VERSION MISMATCH!^0')
+                print('^3' .. resourcename .. ' ^8VERSION MISMATCH!^0' .. betaNotice)
             else
-                print('^4' .. resourcename .. ' ^8VERSION MISMATCH!^0')
+                print('^4' .. resourcename .. ' ^8VERSION MISMATCH!^0' .. betaNotice)
             end
-            print('^8Current: ^3' .. version .. '^0 | ^8Latest: ^3' .. data.version .. '^0')
+            print('^8Current: ^3' .. version .. '^0 | ^8Latest: ^3' .. data.version .. '^0' .. betaNotice)
             if escrow == true then
-                print('^8Download: ^3https://keymaster.fivem.net^0')
+                print('^8Download: ^3https://keymaster.fivem.net^0' .. betaNotice)
             else
-                print('^8Download: ^3https://github.com/Spooni-Development/' .. resourcename .. '^0')
+                print('^8Download: ^3https://github.com/Spooni-Development/' .. resourcename .. '^0' .. betaNotice)
             end
         end
     end, 'GET')

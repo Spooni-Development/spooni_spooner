@@ -1,4 +1,6 @@
-# 💻 Spooner
+<span style="color:red; font-weight:bold;">This is a BETA version – not production ready!</span>
+# 💻 Spooner 
+ 
 Documentation relating to the [spooni_spooner](https://github.com/Spooni-Development/spooni_spooner).
 
 ## 1. Installation
