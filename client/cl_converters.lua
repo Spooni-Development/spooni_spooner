@@ -495,6 +495,8 @@ local function loadXml(xml)
                     db.delete[key].quaternion.z = tonumber(value) or 0.0
                 elseif name == "Hash" then
                     db.delete[key].model = tonumber(value) or joaat(value)
+					db.delete[key].name = GetModelName(db.delete[key].model)
+					db.delete[key].distance = 1.0
                 elseif name == "Collision" then
                     db.delete[key].collisionDisabled = value == "false"
                 elseif name == "Visible" then
