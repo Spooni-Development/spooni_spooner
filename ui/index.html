@@ -6,6 +6,10 @@
 		<script src="script.js"></script>
 	</head>
 	<body>
+		<!-- 3D-Gizmo (gs_gizmo-Bundle, Original-Dateinamen aus dem Vite-Build — NIE umbenennen,
+		     die Modul-Imports sind fest verdrahtet!); mountet auf #root -->
+		<div id="root"></div>
+		<script type="module" crossorigin src="./gizmo/index-Cz3nLCWQ.js"></script>
 		<div id="hud">
 			<div id="crosshair" class="inactive">+</div>
 			<div id="info">
@@ -211,6 +215,7 @@
 		<div id="object-database" class="menu">
 			<div id="object-database-search" class="search">
 				<input type="text" id="object-database-search-filter" class="search-filter" value="">
+				<button id="object-database-sort" title="Sort: Placement (oldest &#8594; newest)">&#9202;&#9650;</button>
 			</div>
 			<div id="object-database-stats">
 				<div class="object-database-stat">All: <span id="object-database-total-entities"></span></div>
@@ -221,6 +226,13 @@
 				<div class="object-database-stat">Spo: <span id="spooni-database-total-spooni"></span></div>
 			</div>
 			<div id="object-database-list" class="list"></div>
+			<div id="object-database-selection-bar">
+				<span id="object-database-selection-count"></span>
+				<button id="db-selection-move" title="Move selection with the gizmo">Move</button>
+				<button id="db-selection-export" title="Export selection only">Export</button>
+				<button id="db-selection-delete" title="Delete selection">Delete</button>
+				<button id="db-selection-clear" title="Clear selection">&#10005;</button>
+			</div>
 			<button id="add-to-db-btn">Add to DB</button>
 			<button id="object-database-delete-all-btn">Delete All</button>
 			<button id="object-database-close-btn">Close</button>
@@ -362,10 +374,12 @@
 						<button id="copy-position" class="copy-button">
 							<i><img src="./img/clipboard.svg" width="24" height="24"></i>
 						</button>
+						<button id="copy-vec4" class="copy-button" title="Copy x, y, z, heading">v4</button>
 					</div>
 				</div>
 				<div class="property multiple">
 					<button id="properties-place-here">Place Here</button>
+					<button id="properties-gizmo" title="Move/rotate with the 3D gizmo">Gizmo</button>
 					<button id="properties-goto">Go To</button>
 				</div>
 				<div class="property">
@@ -614,6 +628,7 @@
 				<input type="text" id="import-url" placeholder="Import from URL">
 				<button id="import-db">Import</button>
 				<button id="export-db">Export</button>
+				<span id="import-export-selection-info"></span>
 			</div>
 			<textarea id="import-export-content" spellcheck="false"></textarea>
 			<button id="import-export-db-close">Close</button>
