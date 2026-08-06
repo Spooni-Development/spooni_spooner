@@ -674,8 +674,12 @@ function populateVehicleList(filter) {
 function populateObjectList(filter) {
 	var objectList = document.getElementById('object-list');
 	var favsOnly = document.getElementById('favourite-objects').hasAttribute('data-active');
+	var MAX = 300; // Cap gegen Tipp-Lag bei ~17k Objects (Muster wie Animations-Menue)
 
 	objectList.innerHTML = '';
+
+	var f = filter ? filter.toLowerCase() : '';
+	var shown = 0, total = 0;
 
 	objects.forEach(name => {
 		var isFav = favourites.objects[name];
@@ -684,34 +688,53 @@ function populateObjectList(filter) {
 			return;
 		}
 
-		if (!filter || filter == '' || name.toLowerCase().includes(filter.toLowerCase())) {
-			var div = document.createElement('div');
-
-			if (isFav) {
-				div.className = 'object favourite';
-			} else {
-				div.className = 'object';
-			}
-
-			div.setAttribute('data-model', name);
-			div.setAttribute('data-favourite-type', 'objects');
-			div.setAttribute('data-favourite-name', name);
-
-			div.innerHTML = name;
-
-			div.addEventListener('click', function(event) {
-				closeObjectMenu(this);
-			});
-
-			if (isFav) {
-				div.addEventListener('contextmenu', favouriteOnClick);
-			} else {
-				div.addEventListener('contextmenu', nonFavouriteOnClick);
-			}
-
-			objectList.appendChild(div);
+		if (f !== '' && !name.toLowerCase().includes(f)) {
+			return;
 		}
+
+		total++;
+		if (shown >= MAX) {
+			return;
+		}
+		shown++;
+
+		var div = document.createElement('div');
+
+		if (isFav) {
+			div.className = 'object favourite';
+		} else {
+			div.className = 'object';
+		}
+
+		div.setAttribute('data-model', name);
+		div.setAttribute('data-favourite-type', 'objects');
+		div.setAttribute('data-favourite-name', name);
+
+		div.innerHTML = name;
+
+		div.addEventListener('click', function(event) {
+			closeObjectMenu(this);
+		});
+
+		if (isFav) {
+			div.addEventListener('contextmenu', favouriteOnClick);
+		} else {
+			div.addEventListener('contextmenu', nonFavouriteOnClick);
+		}
+
+		objectList.appendChild(div);
 	});
+
+	if (total > shown) {
+		var note = document.createElement('div');
+		note.className = 'list-note';
+		note.style.opacity = '0.55';
+		note.style.pointerEvents = 'none';
+		note.style.padding = '6px';
+		note.style.fontStyle = 'italic';
+		note.textContent = shown + ' von ' + total + ' — Suche verfeinern';
+		objectList.appendChild(note);
+	}
 }
 
 function populateSpooniList(filter) {
@@ -1067,12 +1090,85 @@ function entityDisplayName(entity, props) {
 	}
 }
 
+// Sortierung & Multi-Select der Database-Liste
+var dbSortMode = 'placed-asc'; // 'placed-asc' | 'placed-desc' | 'name'
+var dbSelection = new Set();
+var dbLastAnchor = null;
+var dbRenderedOrder = [];
+var exportSelectionHandles = null;
+
+function dbSortKeys(database, keys) {
+	keys.sort(function(a, b) {
+		if (dbSortMode == 'name') {
+			return (database[a].name || '').localeCompare(database[b].name || '');
+		}
+
+		var pa = database[a].placedAt || parseInt(a);
+		var pb = database[b].placedAt || parseInt(b);
+
+		return dbSortMode == 'placed-desc' ? pb - pa : pa - pb;
+	});
+
+	return keys;
+}
+
+function dbSelectionArray() {
+	return Array.from(dbSelection).map(Number);
+}
+
+function updateDbSelectionUi() {
+	var bar = document.getElementById('object-database-selection-bar');
+	var count = document.getElementById('object-database-selection-count');
+
+	document.querySelectorAll('#object-database-list .object').forEach(function(row) {
+		row.classList.toggle('multi-selected', dbSelection.has(row.getAttribute('data-handle')));
+	});
+
+	if (dbSelection.size > 0) {
+		count.innerHTML = dbSelection.size + ' selected';
+		bar.style.display = 'flex';
+	} else {
+		bar.style.display = 'none';
+	}
+}
+
+function clearDbSelection() {
+	dbSelection.clear();
+	dbLastAnchor = null;
+	updateDbSelectionUi();
+}
+
+function toggleDbSelection(handle) {
+	if (dbSelection.has(handle)) {
+		dbSelection.delete(handle);
+	} else {
+		dbSelection.add(handle);
+	}
+}
+
+function selectDbRange(fromHandle, toHandle) {
+	var from = dbRenderedOrder.indexOf(fromHandle);
+	var to = dbRenderedOrder.indexOf(toHandle);
+
+	if (from == -1 || to == -1) {
+		toggleDbSelection(toHandle);
+		return;
+	}
+
+	var start = Math.min(from, to);
+	var end = Math.max(from, to);
+
+	for (var i = start; i <= end; i++) {
+		dbSelection.add(dbRenderedOrder[i]);
+	}
+}
+
 function openDatabase(data,filter) {
 	currentData = data;
 	var objectList = document.querySelector('#object-database-list');
 	var database = JSON.parse(data.database);
 
-	var keys = Object.keys(database);
+	var keys = dbSortKeys(database, Object.keys(database));
 
 	var totalEntities = keys.length;
 	var totalPeds = 0;
@@ -1082,6 +1178,14 @@ function openDatabase(data,filter) {
 	var totalNetworked = 0;
 
 	objectList.innerHTML = '';
+	dbRenderedOrder = [];
+
+	// Auswahl von Handles bereinigen, die nicht mehr in der DB sind
+	dbSelection.forEach(function(handle) {
+		if (!database[handle]) {
+			dbSelection.delete(handle);
+		}
+	});
 
 	keys.forEach(function(handle) {
 		var entityId = parseInt(handle);
@@ -1105,9 +1209,9 @@ function openDatabase(data,filter) {
 			++totalNetworked;
 		}
 
-		if (!filter || 
-			filter == '' || 
-			database[handle].name.toLowerCase().includes(filter.toLowerCase()) || 
+		if (!filter ||
+			filter == '' ||
+			database[handle].name.toLowerCase().includes(filter.toLowerCase()) ||
 			handle.includes(filter)) {
 			var div = document.createElement('div');
 
@@ -1118,11 +1222,29 @@ function openDatabase(data,filter) {
 			} else {
 				div.className = 'object'
 			}
-	
+
+			if (dbSelection.has(handle)) {
+				div.classList.add('multi-selected');
+			}
+
 			div.innerHTML = entityDisplayName(entityId, database[handle]);
-	
+
 			div.setAttribute('data-handle', handle);
 			div.addEventListener('click', function(event) {
+				if (event.altKey || event.ctrlKey) {
+					toggleDbSelection(handle);
+					dbLastAnchor = handle;
+					updateDbSelectionUi();
+					return;
+				}
+
+				if (event.shiftKey) {
+					selectDbRange(dbLastAnchor || handle, handle);
+					dbLastAnchor = handle;
+					updateDbSelectionUi();
+					return;
+				}
+
 				document.querySelector('#object-database').style.display = 'none';
 				sendMessage('openPropertiesMenuForEntity', {
 					entity: entityId
@@ -1132,8 +1254,11 @@ function openDatabase(data,filter) {
 				deleteEntity(this);
 			});
 			objectList.appendChild(div);
+			dbRenderedOrder.push(handle);
 		}
 	});
+
+	updateDbSelectionUi();
 
 	document.getElementById('object-database-total-entities').innerHTML = keys.length;
 	document.getElementById('object-database-total-peds').innerHTML = totalPeds;
@@ -1530,6 +1655,7 @@ function updatePermissions(data) {
 	document.getElementById('properties-y').disabled = !permissions.properties.position;
 	document.getElementById('properties-z').disabled = !permissions.properties.position;
 	document.getElementById('properties-place-here').disabled = !permissions.properties.position;
+	document.getElementById('properties-gizmo').disabled = !permissions.properties.position;
 	document.getElementById('properties-goto').disabled = !permissions.properties.goTo;
 	document.getElementById('properties-pitch').disabled = !permissions.properties.rotation;
 	document.getElementById('properties-roll').disabled = !permissions.properties.rotation;
@@ -1689,6 +1815,18 @@ function populatePedConfigFlagsList(flags) {
 }
 
 window.addEventListener('message', function(event) {
+	// Gizmo-Bundle nutzt 'action' statt 'type' — Canvas nur bei aktiver Session zeigen,
+	// sonst frisst es Maus-Events der normalen Spooner-UI
+	if (event.data.action == 'SetupGizmo') {
+		var gizmoActive = event.data.data && event.data.data.handle != null;
+		document.getElementById('root').classList.toggle('active', gizmoActive);
+
+		if (gizmoActive) {
+			// Canvas-Größe sicherheitshalber neu messen lassen
+			window.dispatchEvent(new Event('resize'));
+		}
+	}
+
 	switch (event.data.type) {
 		case 'showSpoonerHud':
 			showSpoonerHud();
@@ -1710,6 +1848,11 @@ window.addEventListener('message', function(event) {
 			break;
 		case 'openSaveLoadDbMenu':
 			openSaveLoadDbMenu(event.data.databaseNames);
+			break;
+		case 'hideImportExportDb':
+			exportSelectionHandles = null;
+			document.querySelector('#import-export-selection-info').innerHTML = '';
+			document.querySelector('#import-export-db').style.display = 'none';
 			break;
 		case 'openHelpMenu':
 			openHelpMenu();
@@ -1792,8 +1935,11 @@ window.addEventListener('load', function() {
 		populateVehicleList(this.value);
 	});
 
+	var objectFilterTimer;
 	document.querySelector('#object-search-filter').addEventListener('input', function(event) {
-		populateObjectList(this.value);
+		var val = this.value;
+		clearTimeout(objectFilterTimer);
+		objectFilterTimer = setTimeout(function() { populateObjectList(val); }, 100);
 	});
 	document.querySelector('#spooni-search-filter').addEventListener('input', function(event) {
 		populateSpooniList(this.value);
@@ -1805,6 +1951,17 @@ window.addEventListener('load', function() {
 	
 	document.getElementById('object-database-search-filter').addEventListener('input', function(event) {
 		openDatabase(currentData,this.value);
+	});
+
+	// Enter im Suchfeld = ersten Treffer der zugehoerigen Liste aktivieren (X-search-filter -> X-list)
+	document.querySelectorAll('.search-filter').forEach(function(input) {
+		input.addEventListener('keydown', function(event) {
+			if (event.key !== 'Enter') return;
+			var list = document.getElementById(input.id.replace('-search-filter', '-list'));
+			if (!list) return;
+			var first = list.querySelector('div');
+			if (first) first.click();
+		});
 	});
 
 	document.querySelector('#ped-spawn-by-name').addEventListener('click', function(event) {
@@ -1893,7 +2050,84 @@ window.addEventListener('load', function() {
 	});
 
 	document.querySelector('#object-database-close-btn').addEventListener('click', function(event) {
+		clearDbSelection();
 		closeDatabase();
+	});
+
+	document.querySelector('#object-database-sort').addEventListener('click', function(event) {
+		if (dbSortMode == 'placed-asc') {
+			dbSortMode = 'placed-desc';
+			this.innerHTML = '&#9202;&#9660;';
+			this.title = 'Sort: Placement (newest → oldest)';
+		} else if (dbSortMode == 'placed-desc') {
+			dbSortMode = 'name';
+			this.innerHTML = 'A-Z';
+			this.title = 'Sort: Name';
+		} else {
+			dbSortMode = 'placed-asc';
+			this.innerHTML = '&#9202;&#9650;';
+			this.title = 'Sort: Placement (oldest → newest)';
+		}
+
+		openDatabase(currentData, document.getElementById('object-database-search-filter').value);
+	});
+
+	document.querySelector('#db-selection-move').addEventListener('click', function(event) {
+		var handles = dbSelectionArray();
+
+		if (handles.length == 0) {
+			return;
+		}
+
+		clearDbSelection();
+		document.querySelector('#object-database').style.display = 'none';
+
+		sendMessage('moveSelection', {
+			handles: handles
+		});
+	});
+
+	document.querySelector('#db-selection-export').addEventListener('click', function(event) {
+		var handles = dbSelectionArray();
+
+		if (handles.length == 0) {
+			return;
+		}
+
+		exportSelectionHandles = handles;
+
+		document.querySelector('#object-database').style.display = 'none';
+		document.querySelector('#import-export-selection-info').innerHTML = 'Export: ' + handles.length + ' selected';
+		document.querySelector('#import-export-format').value = 'offset';
+		document.querySelector('#import-export-db').style.display = 'flex';
+	});
+
+	document.querySelector('#db-selection-delete').addEventListener('click', function(event) {
+		var handles = dbSelectionArray();
+
+		if (handles.length == 0) {
+			return;
+		}
+
+		clearDbSelection();
+
+		sendMessage('deleteSelection', {
+			handles: handles
+		}).then(resp => resp.json()).then(resp => openDatabase(resp, document.getElementById('object-database-search-filter').value));
+	});
+
+	document.querySelector('#db-selection-clear').addEventListener('click', function(event) {
+		clearDbSelection();
+	});
+
+	document.querySelector('#properties-gizmo').addEventListener('click', function(event) {
+		var handle = currentEntity();
+
+		closePropertiesMenu(false);
+
+		sendMessage('gizmoEntity', {
+			handle: handle
+		});
 	});
 
 	document.querySelector('#properties-add-to-db').addEventListener('click', function(event) {
@@ -1946,7 +2180,7 @@ window.addEventListener('load', function() {
 			document.querySelector('#properties-z').value = resp.z;
 			document.querySelector('#properties-pitch').value = resp.pitch;
 			document.querySelector('#properties-roll').value = resp.roll;
-			document.querySelector('#properties-yaw').value = resp.pitch;
+			document.querySelector('#properties-yaw').value = resp.yaw;
 		});
 	});
 
@@ -1963,6 +2197,19 @@ window.addEventListener('load', function() {
 				roll: parseFloat(document.querySelector('#properties-roll').value),
 				yaw: parseFloat(document.querySelector('#properties-yaw').value)
 			});
+		});
+	});
+
+	// Mausrad-Nudge: ueber ein pos/rot-Feld scrollen = +/- step (nutzt den schon gesetzten
+	// adjustSpeed/rotateSpeed-step) und feuert die vorhandenen input-Handler oben.
+	document.querySelectorAll('.adjust-input, .rotate-input').forEach(function(e) {
+		e.addEventListener('wheel', function(event) {
+			event.preventDefault();
+			var step = parseFloat(this.step) || 1;
+			var val = parseFloat(this.value) || 0;
+			var delta = event.deltaY < 0 ? step : -step;
+			this.value = parseFloat((val + delta).toFixed(3));
+			this.dispatchEvent(new Event('input', { bubbles: true }));
 		});
 	});
 
@@ -2012,6 +2259,8 @@ window.addEventListener('load', function() {
 	});
 
 	document.querySelector('#import-export-db-btn').addEventListener('click', function(event) {
+		exportSelectionHandles = null;
+		document.querySelector('#import-export-selection-info').innerHTML = '';
 		document.querySelector('#save-load-db-menu').style.display = 'none';
 		document.querySelector('#import-export-db').style.display = 'flex';
 	});
@@ -2037,6 +2286,18 @@ window.addEventListener('load', function() {
 	});
 
 	document.querySelector('#export-db').addEventListener('click', function(event) {
+		if (exportSelectionHandles && exportSelectionHandles.length > 0) {
+			sendMessage('exportSelection', {
+				handles: exportSelectionHandles,
+				format: document.querySelector('#import-export-format').value,
+				content: document.querySelector('#import-export-content').value
+			}).then(resp => resp.json()).then(function(resp) {
+				document.querySelector('#import-export-content').value = resp;
+			});
+
+			return;
+		}
+
 		sendMessage('exportDb', {
 			format: document.querySelector('#import-export-format').value,
 			content: document.querySelector('#import-export-content').value
@@ -2046,6 +2307,8 @@ window.addEventListener('load', function() {
 	});
 
 	document.querySelector('#import-export-db-close').addEventListener('click', function(event) {
+		exportSelectionHandles = null;
+		document.querySelector('#import-export-selection-info').innerHTML = '';
 		document.querySelector('#import-export-db').style.display = 'none';
 		sendMessage('closeImportExportDbWindow', {});
 	});
@@ -2649,6 +2912,15 @@ window.addEventListener('load', function() {
 		var z = document.getElementById('properties-z').value;
 
 		copyToClipboard(x + ', ' + y + ', ' + z)
+	});
+
+	document.getElementById('copy-vec4').addEventListener('click', function(event) {
+		var x = document.getElementById('properties-x').value;
+		var y = document.getElementById('properties-y').value;
+		var z = document.getElementById('properties-z').value;
+		var h = document.getElementById('properties-yaw').value; // yaw == heading; Panel gilt fuer Objekt UND Ped
+
+		copyToClipboard(x + ', ' + y + ', ' + z + ', ' + h);
 	});
 
 	document.getElementById('copy-rotation').addEventListener('click', function(event) {

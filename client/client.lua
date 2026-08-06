@@ -1,4 +1,5 @@
 local Database = {}
+local PlacementCounter = 0
 
 local Cam
 local Speed = Config.Speed
@@ -185,7 +186,10 @@ function IsPickupTypeValid(pickupHash)
 end
 
 function IsEntityFrozen(entity)
-	return Citizen.InvokeNative(0x083D497D57B7400F, entity)
+	-- Ohne Result-Sentinel liefert InvokeNative IMMER nil (Bestandsbug): dadurch war
+	-- Database[entity].isFrozen stets false und aufgetaute Entities wurden nach einem
+	-- Gizmo-Move nie wieder eingefroren → Prop rollt/fällt weg
+	return Citizen.InvokeNative(0x083D497D57B7400F, entity, Citizen.ReturnResultAnyway())
 end
 
 function IsPedUsingScenarioHash(ped, scenarioHash)
@@ -504,7 +508,17 @@ function AddEntityToDatabase(entity, name, attachment)
 
 	local isFrozen = Database[entity] and Database[entity].isFrozen
 
+	-- Platzierungs-Reihenfolge merken: einmal vergeben, nie überschrieben
+	local placedAt = Database[entity] and Database[entity].placedAt
+
+	if placedAt == nil then
+		PlacementCounter = PlacementCounter + 1
+		placedAt = PlacementCounter
+	end
+
 	Database[entity] = GetLiveEntityProperties(entity)
+
+	Database[entity].placedAt = placedAt
 
 	if name then
 		Database[entity].name = name
@@ -1485,6 +1499,120 @@ function AttachEntity(from, to, bone, x, y, z, pitch, roll, yaw, useSoftPinning,
 	end
 end
 
+--- Bewegt Entities mit dem eigenen 3D-Gizmo (client/gizmo.lua; ersetzt den alten Prompt-Platzierungsmodus).
+--- Alle weiteren Entities werden an das erste (Anker) attacht — die Engine hält den Verbund
+--- zusammen, Rotation dreht also den ganzen Bulk statt jedes Objekt einzeln.
+--- Kamera: eigene fixe Kamera, die auf den Anker zeigt (kein Freeflug).
+--- @param entities table Liste von Entity-Handles (erstes = Anker)
+--- @param opts table|nil { deleteOnCancel = boolean }
+--- @return boolean true wenn platziert, false bei Abbruch
+function MoveEntitiesWithGizmo(entities, opts)
+	opts = opts or {}
+
+	local valid = {}
+
+	for _, e in ipairs(entities) do
+		if e and DoesEntityExist(e) then
+			valid[#valid + 1] = e
+		end
+	end
+
+	if #valid == 0 then return false end
+
+	-- Spooner-Freecam beenden, damit die Gizmo-Kamera sauber übernimmt
+	if Cam then
+		DisableSpoonerMode()
+	end
+
+	SetNuiFocus(false, false)
+
+	local anchor = valid[1]
+	local snapshots = {}
+
+	for _, e in ipairs(valid) do
+		RequestControl(e)
+
+		snapshots[#snapshots + 1] = {
+			entity = e,
+			pos = GetEntityCoords(e),
+			rot = GetEntityRotation(e, 2),
+			frozen = Config.isRDR and IsEntityFrozen(e) or false
+		}
+
+		FreezeEntityPosition(e, false)
+		SetEntityAlpha(e, 200)
+		SetEntityCompletelyDisableCollision(e, false, false)
+	end
+
+	-- Bulk zusammenheften: Member an den Anker attachen (relative Lage bleibt fix)
+	local aRot = GetEntityRotation(anchor, 2)
+
+	for i = 2, #valid do
+		local e = valid[i]
+		-- Re-Check: e ODER anchor kann zwischen Sammlung und Attach despawnen
+		-- (Streaming). Attach an ein totes Entity kann den Render-Szenegraph korrumpieren.
+		if e and DoesEntityExist(e) and DoesEntityExist(anchor) then
+			local mPos = GetEntityCoords(e)
+			local mRot = GetEntityRotation(e, 2)
+			local off = GetOffsetFromEntityGivenWorldCoords(anchor, mPos.x, mPos.y, mPos.z)
+
+			AttachEntityToEntity(e, anchor, 0, off.x, off.y, off.z,
+				mRot.x - aRot.x, mRot.y - aRot.y, mRot.z - aRot.z,
+				false, false, false, false, 0, true, false, false)
+		end
+	end
+
+	-- Gruppen-Radius für den Kamera-Abstand des Gizmos
+	local aPos = GetEntityCoords(anchor)
+	local radius = 0.0
+
+	for i = 2, #snapshots do
+		local d = #(snapshots[i].pos - aPos)
+		if d > radius then
+			radius = d
+		end
+	end
+
+	-- Eigenes Gizmo (client/gizmo.lua): Kamera startet an der aktuellen Blickposition,
+	-- hält den Anker im Fokus (jo_libs-Logik) und fliegt per WASD/QE
+	local result = SpoonerToggleGizmo(anchor, radius)
+
+	-- Verbund lösen, bevor Positionen gesetzt/gelesen werden
+	for i = 2, #valid do
+		if DoesEntityExist(valid[i]) then
+			DetachEntity(valid[i], true, true)
+		end
+	end
+
+	local placed = type(result) == 'table'
+
+	for _, s in ipairs(snapshots) do
+		if DoesEntityExist(s.entity) then
+			if not placed and opts.deleteOnCancel then
+				RemoveEntity(s.entity)
+			else
+				if not placed then
+					SetEntityCoordsNoOffset(s.entity, s.pos.x, s.pos.y, s.pos.z)
+					SetEntityRotation(s.entity, s.rot.x, s.rot.y, s.rot.z, 2, false)
+				end
+
+				SetEntityAlpha(s.entity, 255)
+				SetEntityCompletelyDisableCollision(s.entity, true, true)
+
+				if s.frozen then
+					FreezeEntityPosition(s.entity, true)
+				end
+
+				if placed and EntityIsInDatabase(s.entity) then
+					AddEntityToDatabase(s.entity)
+				end
+			end
+		end
+	end
+
+	return placed
+end
+
 function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
 	if replace then
 		RemoveAllFromDatabase()
@@ -1527,6 +1655,17 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
             print("!! missing prop positions in entity: " .. tostring(entity))
         end
     end
+
+	-- In gespeicherter Platzierungs-Reihenfolge spawnen, damit die Reihenfolge
+	-- (placedAt wird beim Spawnen neu vergeben) über Save/Load erhalten bleibt
+	table.sort(spawns, function(a, b)
+		local pa = a.props.placedAt or math.huge
+		local pb = b.props.placedAt or math.huge
+		if pa == pb then
+			return (a.entity or 0) < (b.entity or 0)
+		end
+		return pa < pb
+	end)
 
 	local dx, dy, dz
 
@@ -1658,7 +1797,7 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
 	end
 
 	if isOffsetPlacement then
-		CreateObjects(moveableEntities,1,100.0)
+		MoveEntitiesWithGizmo(moveableEntities, { deleteOnCancel = true })
 	end
 
 end
@@ -2195,15 +2334,34 @@ end
 
 function ConvertDatabaseToOffset(database)
 	local entities = {}
-	local count = 0
-	local firstEntity = nil
+
+	-- In Platzierungs-Reihenfolge exportieren: erstes platziertes Objekt = Anker
+	local sorted = {}
+
 	for entity, properties in pairs(database.spawn) do
-		local currentEntity = tonumber(entity)
+		sorted[#sorted + 1] = { entity = tonumber(entity), props = properties }
+	end
+
+	table.sort(sorted, function(a, b)
+		local pa = a.props.placedAt or math.huge
+		local pb = b.props.placedAt or math.huge
+		if pa == pb then
+			return (a.entity or 0) < (b.entity or 0)
+		end
+		return pa < pb
+	end)
+
+	local firstEntity = nil
+
+	for _, item in ipairs(sorted) do
+		local currentEntity = item.entity
+		local properties = item.props
+
 		if properties.type == 3 and DoesEntityExist(currentEntity) then
-			count = count + 1
-			if count == 1 then
+			if not firstEntity then
 				firstEntity = currentEntity
 			end
+
 			local x, y, z = table.unpack(GetEntityCoords(firstEntity))
 			local x1, y1, z1 = table.unpack(GetEntityCoords(currentEntity))
 			local coords = vector3(x1 - x, y1 - y, (z1 - z))
@@ -2255,6 +2413,11 @@ function RestoreDbs(content)
 end
 
 local function loadOffset(file)
+	-- Import/Export-Fenster ausblenden, damit das Gizmo freie Sicht hat
+	SendNUIMessage({
+		type = 'hideImportExportDb'
+	})
+
 	local data = json.decode(file)
 	local db = {}
 	local coords = GetEntityCoords(PlayerPedId())
@@ -2519,10 +2682,24 @@ local function loadScript(xml)
     LoadDatabase(db, false, false, false, dataType)
 end
 
-function ExportDatabase(format, content)
+function ExportDatabase(format, content, handleFilter)
 	UpdateDatabase()
 
 	local db = PrepareDatabaseForSave()
+
+	-- Nur ausgewählte Handles exportieren (Multi-Select in der Database-Liste)
+	if handleFilter then
+		local filtered = {}
+
+		for k, v in pairs(db.spawn) do
+			if handleFilter[tostring(k)] then
+				filtered[k] = v
+			end
+		end
+
+		db.spawn = filtered
+		db.delete = {}
+	end
 
 	if format == 'spooner-db-json' then
 		return json.encode(db)
@@ -2575,6 +2752,71 @@ RegisterNUICallback('importDb', function(data, cb)
 	print(data.format)
 	ImportDatabase(data.format, data.content)
 	cb({})
+end)
+
+RegisterNUICallback('exportSelection', function(data, cb)
+	local filter = {}
+
+	for _, h in ipairs(data.handles or {}) do
+		filter[tostring(h)] = true
+	end
+
+	cb(ExportDatabase(data.format, data.content, filter))
+end)
+
+RegisterNUICallback('moveSelection', function(data, cb)
+	cb({})
+
+	-- Fokus immer freigeben — das DB-Fenster wurde UI-seitig schon versteckt
+	SetNuiFocus(false, false)
+
+	if not Permissions.properties.position then return end
+
+	local list = {}
+
+	for _, h in ipairs(data.handles or {}) do
+		local e = tonumber(h)
+
+		if e and DoesEntityExist(e) and CanModifyEntity(e) then
+			list[#list + 1] = e
+		end
+	end
+
+	if #list == 0 then return end
+
+	CreateThread(function()
+		MoveEntitiesWithGizmo(list, { deleteOnCancel = false })
+	end)
+end)
+
+RegisterNUICallback('gizmoEntity', function(data, cb)
+	cb({})
+
+	-- Fokus immer freigeben — das Properties-Fenster wurde UI-seitig schon geschlossen
+	SetNuiFocus(false, false)
+
+	local e = tonumber(data.handle)
+
+	if not e or not DoesEntityExist(e) then return end
+	if not (Permissions.properties.position and CanModifyEntity(e)) then return end
+
+	CreateThread(function()
+		MoveEntitiesWithGizmo({ e }, { deleteOnCancel = false })
+	end)
+end)
+
+RegisterNUICallback('deleteSelection', function(data, cb)
+	for _, h in ipairs(data.handles or {}) do
+		local e = tonumber(h)
+
+		if e then
+			RemoveEntity(e)
+		end
+	end
+
+	cb({
+		database = json.encode(Database)
+	})
 end)
 
 RegisterNUICallback('closeImportExportDbWindow', function(data, cb)
