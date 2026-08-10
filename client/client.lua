@@ -1519,8 +1519,20 @@ function MoveEntitiesWithGizmo(entities, opts)
 
 	if #valid == 0 then return false end
 
-	-- Spooner-Freecam beenden, damit die Gizmo-Kamera sauber übernimmt
+	-- Spooner-Freecam beenden, damit die Gizmo-Kamera sauber übernimmt. Pose merken:
+	-- ohne sie steht man nach dem Gizmo wortlos im Gameplay-Cam statt im Spooner.
+	local restoreCam = nil
+
 	if Cam then
+		local cx, cy, cz = table.unpack(GetCamCoord(Cam))
+		local cpitch, croll, cyaw = table.unpack(GetCamRot(Cam, 2))
+
+		restoreCam = {
+			x = cx, y = cy, z = cz,
+			pitch = cpitch, roll = croll, yaw = cyaw,
+			fov = GetCamFov(Cam)
+		}
+
 		DisableSpoonerMode()
 	end
 
@@ -1606,6 +1618,21 @@ function MoveEntitiesWithGizmo(entities, opts)
 				if placed and EntityIsInDatabase(s.entity) then
 					AddEntityToDatabase(s.entity)
 				end
+			end
+		end
+	end
+
+	-- Spooner wieder aufnehmen, wo er unterbrochen wurde
+	if restoreCam and not Cam then
+		EnableSpoonerMode()
+
+		if Cam then
+			SetCamCoord(Cam, restoreCam.x, restoreCam.y, restoreCam.z)
+			SetCamFov(Cam, restoreCam.fov)
+
+			-- Bei aktivem Fokus zielt EnableSpoonerMode die Kamera schon selbst
+			if not FocusTarget then
+				SetCamRot(Cam, restoreCam.pitch, restoreCam.roll, restoreCam.yaw, 2)
 			end
 		end
 	end
@@ -1945,8 +1972,9 @@ function CloneEntity(entity)
 	elseif props.type == 3 then
 		clone = SpawnObject(props.name, props.model, props.x, props.y, props.z, props.pitch, props.roll, props.yaw, props.collisionDisabled, props.isVisible, props.lightsIntensity, props.lightsColour, props.lightsType)
 	elseif props.type == 4 then
-		clone = SpawnSpooni(props.name, props.model, props.x, props.y, props.z, props.pitch, props.roll, props.yaw, props.collisionDisabled, props.isVisible, props.lightsIntensity, props.lightsColour, props.lightsType)
-
+		-- type 4 ist Propset (siehe UpdateDatabase/Spawn-Pfad), nicht Spooni -
+		-- SpawnSpooni hat zudem eine andere Signatur als SpawnPropset
+		clone = SpawnPropset(props.name, props.model, props.x, props.y, props.z, props.yaw)
 	elseif props.type == 5 then
 		clone = SpawnPickup(props.name, props.model, props.x, props.y, props.z)
 	else
@@ -4088,27 +4116,56 @@ local function drawEntityHandle(type, entity, camCoords)
 	end
 end
 
+local entityHandleCache = {}
+local entityHandleCacheTime = 0
+
+-- Die Welt-Pools (FindFirst/FindNext) pro Frame durchzuiterieren kostet mehr als
+-- das Zeichnen selbst. Liste zwischenspeichern, nur der DrawText-Teil läuft jeden Frame.
+local function refreshEntityHandleCache()
+	local cache = {}
+
+	for ped in enumeratePeds() do
+		cache[#cache + 1] = {type = "ped", entity = ped}
+	end
+
+	for vehicle in enumerateVehicles() do
+		cache[#cache + 1] = {type = "vehicle", entity = vehicle}
+	end
+
+	for object in enumerateObjects() do
+		cache[#cache + 1] = {type = "object", entity = object}
+	end
+
+	entityHandleCache = cache
+end
+
 local function drawEntityHandles()
 	if Cam then
 		if IsDisabledControlJustPressed(0, Config.EntityHandlesControl) then
 			showEntityHandles = not showEntityHandles
+
+			if showEntityHandles then
+				entityHandleCacheTime = 0
+			else
+				entityHandleCache = {}
+			end
 		end
 
 		if showEntityHandles then
+			local now = GetGameTimer()
+
+			if now - entityHandleCacheTime >= Config.EntityHandleRefreshRate then
+				entityHandleCacheTime = now
+				refreshEntityHandleCache()
+			end
+
 			local camCoords = GetCamCoord(Cam)
 
-			for ped in enumeratePeds() do
-				drawEntityHandle("ped", ped, camCoords)
+			for _, item in ipairs(entityHandleCache) do
+				if DoesEntityExist(item.entity) then
+					drawEntityHandle(item.type, item.entity, camCoords)
+				end
 			end
-
-			for vehicle in enumerateVehicles() do
-				drawEntityHandle("vehicle", vehicle, camCoords)
-			end
-
-			for object in enumerateObjects() do
-				drawEntityHandle("object", object, camCoords)
-			end
-
 		end
 	end
 end
@@ -4121,7 +4178,7 @@ CreateThread(function()
 	while true do
 		MainSpoonerUpdates()
 
-		if Config.isRDR then
+		if Config.isRDR and not (IsGizmoActive and IsGizmoActive()) then
 			SpoonerPrompts:handleEvents()
 		end
 

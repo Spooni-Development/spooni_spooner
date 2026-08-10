@@ -47,6 +47,13 @@ local gizmoAzimuth = 0.0
 local gizmoElevation = 0.0
 local gizmoRadius = 5.0
 
+--- Läuft gerade eine Gizmo-Session? Der Spooner-Hauptloop MUSS das wissen: seine
+--- eigene Prompt-Gruppe darf währenddessen nicht pro Frame aktiv gesetzt werden,
+--- sonst verdrängt sie die Gizmo-Gruppe und Done/Cancel sind tot.
+function IsGizmoActive()
+	return gizmoActive
+end
+
 --- Prompt im 'click'-Modus registrieren (Muster aus gs_gizmo UIPrompts.lua)
 local function RegisterGizmoPrompt(group, text, keyHash)
 	local prompt = PromptRegisterBegin()

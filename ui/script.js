@@ -61,8 +61,22 @@ function showSpoonerHud() {
 	document.querySelector('#hud').style.display = 'block';
 }
 
-function hideSpoonerHud() {
+// Jedes Fenster zumachen, nicht nur einzelne. Lua nimmt beim Beenden den NUI-Fokus
+// weg - was dann noch offen steht, klebt unklickbar im Bild.
+function closeAllWindows() {
+	document.querySelectorAll('.menu').forEach(e => e.style.display = 'none');
 	document.querySelector('#import-export-db').style.display = 'none';
+	document.querySelector('#delete-db-prompt').style.display = 'none';
+	document.querySelector('#help-menu').style.display = 'none';
+
+	if (propertiesMenuUpdate) {
+		clearInterval(propertiesMenuUpdate);
+		propertiesMenuUpdate = null;
+	}
+}
+
+function hideSpoonerHud() {
+	closeAllWindows();
 	document.querySelector('#hud').style.display = 'none';
 }
 
