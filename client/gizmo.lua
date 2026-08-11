@@ -318,7 +318,10 @@ function SpoonerToggleGizmo(anchor, radius)
 			end
 
 			if PromptHasStandardModeCompleted(GroundPrompt) and gizmoTarget then
-				PlaceObjectOnGroundProperly(gizmoTarget)
+				-- PlaceOnGroundProperly, NICHT PlaceObjectOnGroundProperly: letzteres ist
+				-- der FiveM-Zweig. Ein nil-Aufruf hier killt diesen Thread, und dann
+				-- werden Done/Cancel nie mehr geprüft — das Await hängt für immer.
+				PlaceOnGroundProperly(gizmoTarget)
 
 				SendNUIMessage({
 					action = 'SetupGizmo',

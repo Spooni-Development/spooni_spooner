@@ -1622,8 +1622,13 @@ function MoveEntitiesWithGizmo(entities, opts)
 		end
 	end
 
-	-- Spooner wieder aufnehmen, wo er unterbrochen wurde
+	-- Spooner wieder aufnehmen, wo er unterbrochen wurde. Erst die Rückblende der
+	-- Gizmo-Kamera auslaufen lassen (StopGizmoSession blendet 500ms): sonst laufen
+	-- zwei RenderScriptCams-Transitionen übereinander und EnableSpoonerMode liest
+	-- eine Gameplay-Cam, die noch gar nicht dort ist.
 	if restoreCam and not Cam then
+		Wait(550)
+
 		EnableSpoonerMode()
 
 		if Cam then
