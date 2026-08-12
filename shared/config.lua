@@ -41,7 +41,7 @@ if Config.isRDR then
 	Config.ToggleFocusModeControl = {`INPUT_DUCK`, `INPUT_HORSE_STOP`} -- Ctrl
 	Config.LookLrControl          = `INPUT_LOOK_LR`
 	Config.LookUdControl          = `INPUT_LOOK_UD`
-	Config.EntityHandlesControl   = `INPUT_PUSH_TO_TALK` -- N
+	Config.EntityHandlesControl   = `INPUT_SELECT_QUICKSELECT_SIDEARMS_RIGHT` -- 2
 else
 	Config.IncreaseSpeedControl   = 15 -- Page Up, Mouse Wheel Up
 	Config.DecreaseSpeedControl   = 14 -- Page Down, Mouse Wheel Down
@@ -136,3 +136,6 @@ Config.CleanUpOnStop = true
 
 -- Draw distance for entity handles
 Config.EntityHandleDrawDistance = 20.0
+
+-- How often (ms) the entity handle overlay rescans the world entity pools
+Config.EntityHandleRefreshRate = 500
