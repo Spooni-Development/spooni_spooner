@@ -674,12 +674,9 @@ function populateVehicleList(filter) {
 function populateObjectList(filter) {
 	var objectList = document.getElementById('object-list');
 	var favsOnly = document.getElementById('favourite-objects').hasAttribute('data-active');
-	var MAX = 300; // Cap gegen Tipp-Lag bei ~17k Objects (Muster wie Animations-Menue)
-
 	objectList.innerHTML = '';
 
 	var f = filter ? filter.toLowerCase() : '';
-	var shown = 0, total = 0;
 
 	objects.forEach(name => {
 		var isFav = favourites.objects[name];
@@ -691,12 +688,6 @@ function populateObjectList(filter) {
 		if (f !== '' && !name.toLowerCase().includes(f)) {
 			return;
 		}
-
-		total++;
-		if (shown >= MAX) {
-			return;
-		}
-		shown++;
 
 		var div = document.createElement('div');
 
@@ -725,16 +716,6 @@ function populateObjectList(filter) {
 		objectList.appendChild(div);
 	});
 
-	if (total > shown) {
-		var note = document.createElement('div');
-		note.className = 'list-note';
-		note.style.opacity = '0.55';
-		note.style.pointerEvents = 'none';
-		note.style.padding = '6px';
-		note.style.fontStyle = 'italic';
-		note.textContent = shown + ' von ' + total + ' — Suche verfeinern';
-		objectList.appendChild(note);
-	}
 }
 
 function populateSpooniList(filter) {
