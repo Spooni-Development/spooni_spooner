@@ -1376,6 +1376,14 @@ function updatePropertiesMenu(data) {
 		document.getElementById('properties-freeze').style.display = 'block';
 	}
 
+	if (properties.isLocked) {
+		document.getElementById('properties-lock').style.display = 'none';
+		document.getElementById('properties-unlock').style.display = 'block';
+	} else {
+		document.getElementById('properties-unlock').style.display = 'none';
+		document.getElementById('properties-lock').style.display = 'block';
+	}
+
 	if (properties.isInGroup) {
 		document.querySelector('#properties-add-to-group').style.display = 'none';
 		document.querySelector('#properties-remove-from-group').style.display = 'block';
@@ -1646,6 +1654,8 @@ function updatePermissions(data) {
 
 	document.getElementById('properties-freeze').disabled = !permissions.properties.freeze;
 	document.getElementById('properties-unfreeze').disabled = !permissions.properties.freeze;
+	document.getElementById('properties-lock').disabled = !permissions.properties.freeze;
+	document.getElementById('properties-unlock').disabled = !permissions.properties.freeze;
 	document.getElementById('properties-x').disabled = !permissions.properties.position;
 	document.getElementById('properties-y').disabled = !permissions.properties.position;
 	document.getElementById('properties-z').disabled = !permissions.properties.position;
@@ -2151,6 +2161,18 @@ window.addEventListener('load', function() {
 
 	document.querySelector('#properties-unfreeze').addEventListener('click', function(event) {
 		sendMessage('unfreezeEntity', {
+			handle: currentEntity()
+		});
+	});
+
+	document.querySelector('#properties-lock').addEventListener('click', function(event) {
+		sendMessage('lockEntity', {
+			handle: currentEntity()
+		});
+	});
+
+	document.querySelector('#properties-unlock').addEventListener('click', function(event) {
+		sendMessage('unlockEntity', {
 			handle: currentEntity()
 		});
 	});

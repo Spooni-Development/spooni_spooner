@@ -19,6 +19,7 @@ local FreeFocus = false
 local MessageRate = 70
 local MessageInterval = true
 local showEntityHandles = false
+local LastSpawnZ = nil
 
 local SpoonerPrompts, ClearTasksPrompt, DetachPrompt
 
@@ -507,6 +508,7 @@ function AddEntityToDatabase(entity, name, attachment)
 	end
 
 	local isFrozen = Database[entity] and Database[entity].isFrozen
+	local isLocked = Database[entity] and Database[entity].isLocked
 
 	-- Platzierungs-Reihenfolge merken: einmal vergeben, nie überschrieben
 	local placedAt = Database[entity] and Database[entity].placedAt
@@ -564,6 +566,7 @@ function AddEntityToDatabase(entity, name, attachment)
 	if not Config.isRDR then
 		Database[entity].isFrozen = isFrozen
 	end
+	Database[entity].isLocked = isLocked
 
 	return Database[entity]
 end
@@ -1029,24 +1032,28 @@ function CanDeleteEntity(entity)
 end
 
 function StoreDeletedEntity(entity)
-    local props = GetLiveEntityProperties(entity)
+	local props = GetLiveEntityProperties(entity)
 
-    table.insert(DeletedEntities, {
-        x = props.x,
-        y = props.y,
-        z = props.z,
-        model = props.model,
-        name = props.name,
-        distance = 0.1
-    })
+	table.insert(DeletedEntities, {
+		x = props.x,
+		y = props.y,
+		z = props.z,
+		model = props.model,
+		name = props.name,
+		distance = 0.1
+	})
 end
 
-function RemoveEntity(entity)
+function RemoveEntity(entity, force)
 	if not CanDeleteEntity(entity) then
 		return
 	end
 
 	if IsPedAPlayer(entity) then
+		return
+	end
+
+	if not force and Database[entity] and Database[entity].isLocked then
 		return
 	end
 
@@ -1075,7 +1082,7 @@ function RemoveAllFromDatabase()
 		table.insert(entities, handle)
 	end
 	for _, handle in ipairs(entities) do
-		RemoveEntity(handle)
+		RemoveEntity(handle, true)
 	end
 end
 
@@ -1252,8 +1259,27 @@ RegisterNUICallback('unfreezeEntity', function(data, cb)
 	cb({})
 end)
 
+RegisterNUICallback('lockEntity', function(data, cb)
+	if CanModifyEntity(data.handle) then
+		if Database[data.handle] then
+			Database[data.handle].isLocked = true
+		end
+	end
+	cb({})
+end)
+
+RegisterNUICallback('unlockEntity', function(data, cb)
+	if CanModifyEntity(data.handle) then
+		if Database[data.handle] then
+			Database[data.handle].isLocked = false
+		end
+	end
+	cb({})
+end)
+
 RegisterNUICallback('setEntityRotation', function(data, cb)
 	if Permissions.properties.rotation and CanModifyEntity(data.handle) then
+		if Database[data.handle] and Database[data.handle].isLocked then cb({}) return end
 		local pitch = data.pitch and data.pitch * 1.0 or 0.0
 		local roll  = data.roll  and data.roll  * 1.0 or 0.0
 		local yaw   = data.yaw   and data.yaw   * 1.0 or 0.0
@@ -1267,6 +1293,7 @@ end)
 
 RegisterNUICallback('setEntityCoords', function(data, cb)
 	if Permissions.properties.position and CanModifyEntity(data.handle) then
+		if Database[data.handle] and Database[data.handle].isLocked then cb({}) return end
 		local x = data.x and data.x * 1.0 or 0.0
 		local y = data.y and data.y * 1.0 or 0.0
 		local z = data.z and data.z * 1.0 or 0.0
@@ -1280,6 +1307,7 @@ end)
 
 RegisterNUICallback('resetRotation', function(data, cb)
 	if Permissions.properties.rotation and CanModifyEntity(data.handle) then
+		if Database[data.handle] and Database[data.handle].isLocked then cb({}) return end
 		RequestControl(data.handle)
 		SetEntityRotation(data.handle, 0.0, 0.0, 0.0, 2)
 	end
@@ -1416,6 +1444,12 @@ end
 
 RegisterNUICallback('placeEntityHere', function(data, cb)
 	if Permissions.properties.position and CanModifyEntity(data.handle) then
+		if Database[data.handle] and Database[data.handle].isLocked then
+			local x, y, z = table.unpack(GetEntityCoords(data.handle))
+			local pitch, roll, yaw = table.unpack(GetEntityRotation(data.handle, 2))
+			cb({x=x, y=y, z=z, pitch=pitch, roll=roll, yaw=yaw})
+			return
+		end
 		local x, y, z = table.unpack(GetCamCoord(Cam))
 		local pitch, roll, yaw = table.unpack(GetCamRot(Cam, 2))
 
@@ -1760,6 +1794,10 @@ function LoadDatabase(db, relative, replace, isOffsetPlacement, dataType)
 
 		if entity and relative then
 			PlaceOnGroundProperly(entity)
+		end
+
+		if entity and spawn.props.isLocked and Database[entity] then
+			Database[entity].isLocked = true
 		end
 
 		handles[spawn.entity] = entity
@@ -2874,6 +2912,7 @@ end)
 
 RegisterNUICallback('attachTo', function(data, cb)
 	if Permissions.properties.attachments and CanModifyEntity(data.from) then
+		if Database[data.from] and Database[data.from].isLocked then cb({}) return end
 		local from = data.from
 		local to = data.to
 		local bone = data.bone
@@ -2926,6 +2965,7 @@ end)
 
 function TryDetach(handle)
 	if Permissions.properties.attachments and CanModifyEntity(handle) then
+		if Database[handle] and Database[handle].isLocked then return end
 		RequestControl(handle)
 		DetachEntity(handle, false, true)
 
@@ -3723,6 +3763,11 @@ function MainSpoonerUpdates()
 
 		if CheckControls(IsDisabledControlJustPressed, 0, Config.SpawnControl) and CurrentSpawn then
 			local entity
+			local spawnZ = spawnPos.z
+
+			if IsDisabledControlPressed(0, `INPUT_DUCK`) and LastSpawnZ then
+				spawnZ = LastSpawnZ
+			end
 
 			if CurrentSpawn.type == 1 then
 				entity = SpawnPed{
@@ -3730,7 +3775,7 @@ function MainSpoonerUpdates()
 					model = joaat(CurrentSpawn.modelName),
 					x = spawnPos.x,
 					y = spawnPos.y,
-					z = spawnPos.z,
+					z = spawnZ,
 					pitch = 0.0,
 					roll = 0.0,
 					yaw = yaw2 + 180.0,
@@ -3742,19 +3787,23 @@ function MainSpoonerUpdates()
 				}
 
 			elseif CurrentSpawn.type == 2 then
-				entity = SpawnVehicle(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true)
+				entity = SpawnVehicle(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnZ, 0.0, 0.0, yaw2, false, true)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnObject(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnObject(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnZ, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			elseif CurrentSpawn.type == 4 then
-				entity = SpawnPropset(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, yaw2)
+				entity = SpawnPropset(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnZ, yaw2)
 			elseif CurrentSpawn.type == 5 then
-				entity = SpawnPickup(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z)
+				entity = SpawnPickup(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnZ)
 			elseif CurrentSpawn.type == 3 then
-				entity = SpawnSpooni(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnPos.z, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
+				entity = SpawnSpooni(CurrentSpawn.modelName, joaat(CurrentSpawn.modelName), spawnPos.x, spawnPos.y, spawnZ, 0.0, 0.0, yaw2, false, true, nil, nil, nil)
 			end
 
 			if entity then
-				PlaceOnGroundProperly(entity)
+				if not (IsDisabledControlPressed(0, `INPUT_DUCK`) and LastSpawnZ) then
+					PlaceOnGroundProperly(entity)
+				end
+				local _, _, z = table.unpack(GetEntityCoords(entity))
+				LastSpawnZ = z
 			end
 		end
 
@@ -3762,10 +3811,12 @@ function MainSpoonerUpdates()
 			if AttachedEntity then
 				AttachedEntity = nil
 			elseif entity and CanModifyEntity(entity) then
-				if IsEntityAttached(entity) then
-					AttachedEntity = GetEntityAttachedTo(entity)
-				else
-					AttachedEntity = entity
+				if not (Database[entity] and Database[entity].isLocked) then
+					if IsEntityAttached(entity) then
+						AttachedEntity = GetEntityAttachedTo(entity)
+					else
+						AttachedEntity = entity
+					end
 				end
 			end
 		end
@@ -3846,7 +3897,9 @@ function MainSpoonerUpdates()
 			if not entity or FocusTarget == entity then
 				UnfocusEntity()
 			else
-				TryFocusEntity(entity)
+				if not (Database[entity] and Database[entity].isLocked) then
+					TryFocusEntity(entity)
+				end
 			end
 		end
 
@@ -3863,6 +3916,7 @@ function MainSpoonerUpdates()
 		if entity and CanModifyEntity(entity) then
 			local posChanged = false
 			local rotChanged = false
+			local isLocked = Database[entity] and Database[entity].isLocked
 
 			if CheckControls(IsDisabledControlJustReleased, 0, Config.PropMenuControl) then
 				OpenPropertiesMenuForEntity(entity)
@@ -3872,153 +3926,158 @@ function MainSpoonerUpdates()
 				AttachedEntity = CloneEntity(entity)
 			end
 
-			local ex1, ey1, ez1, epitch1, eroll1, eyaw1
-
-			if Database[entity] and Database[entity].attachment.to > 0 then
-				ex1 = Database[entity].attachment.x
-				ey1 = Database[entity].attachment.y
-				ez1 = Database[entity].attachment.z
-				epitch1 = Database[entity].attachment.pitch
-				eroll1 = Database[entity].attachment.roll
-				eyaw1 = Database[entity].attachment.yaw
-			else
-				ex1, ey1, ez1 = table.unpack(GetEntityCoords(entity))
-				epitch1, eroll1, eyaw1 = table.unpack(GetEntityRotation(entity, 2))
-			end
-
-			local ex2 = ex1
-			local ey2 = ey1
-			local ez2 = ez1
-			local epitch2 = epitch1
-			local eroll2 = eroll1
-			local eyaw2 = eyaw1
-
-			local edx1, edy1, edx2, edy2
-
-			if Database[entity] and Database[entity].attachment.to > 0 then
-				edx1 = 0
-				edy1 = AdjustSpeed
-				edx2 = AdjustSpeed
-				edy2 = 0
-			else
-				edx1 = AdjustSpeed * math.sin(r1)
-				edy1 = AdjustSpeed * math.cos(r1)
-				edx2 = AdjustSpeed * math.sin(r2)
-				edy2 = AdjustSpeed * math.cos(r2)
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.RotateLeftControl) then
-				if RotateMode == 0 then
-					epitch2 = epitch2 + RotateSpeed
-				elseif RotateMode == 1 then
-					eroll2 = eroll2 + RotateSpeed
-				else
-					eyaw2 = eyaw2 + RotateSpeed
-				end
-
-				rotChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.RotateRightControl) then
-				if RotateMode == 0 then
-					epitch2 = epitch2 - RotateSpeed
-				elseif RotateMode == 1 then
-					eroll2 = eroll2 - RotateSpeed
-				else
-					eyaw2 = eyaw2 - RotateSpeed
-				end
-
-				rotChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustUpControl) then
-				ez2 = ez2 + AdjustSpeed
-				posChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustDownControl) then
-				ez2 = ez2 - AdjustSpeed
-				posChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustForwardControl) then
-				ex2 = ex2 + edx1
-				ey2 = ey2 + edy1
-				posChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustBackwardControl) then
-				ex2 = ex2 - edx1
-				ey2 = ey2 - edy1
-				posChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustLeftControl) then
-				ex2 = ex2 + edx2
-				ey2 = ey2 + edy2
-				posChanged = true
-			end
-
-			if CheckControls(IsDisabledControlPressed, 0, Config.AdjustRightControl) then
-				ex2 = ex2 - edx2
-				ey2 = ey2 - edy2
-				posChanged = true
-			end
-
-			if AttachedEntity or posChanged or rotChanged then
-				RequestControl(entity)
+			if not isLocked then
+				local ex1, ey1, ez1, epitch1, eroll1, eyaw1
 
 				if Database[entity] and Database[entity].attachment.to > 0 then
-					AttachEntity(entity,
-						Database[entity].attachment.to,
-						Database[entity].attachment.bone,
-						ex2, ey2, ez2,
-						epitch2, eroll2, eyaw2,
-						Database[entity].attachment.useSoftPinning,
-						Database[entity].attachment.collision,
-						Database[entity].attachment.vertex,
-						Database[entity].attachment.fixedRot)
+					ex1 = Database[entity].attachment.x
+					ey1 = Database[entity].attachment.y
+					ez1 = Database[entity].attachment.z
+					epitch1 = Database[entity].attachment.pitch
+					eroll1 = Database[entity].attachment.roll
+					eyaw1 = Database[entity].attachment.yaw
 				else
-					if posChanged then
-						SetEntityCoordsNoOffset(entity, ex2, ey2, ez2)
-					end
-
-					if rotChanged then
-						SetEntityRotation(entity, epitch2, eroll2, eyaw2, 2)
-					end
+					ex1, ey1, ez1 = table.unpack(GetEntityCoords(entity))
+					epitch1, eroll1, eyaw1 = table.unpack(GetEntityRotation(entity, 2))
 				end
 
-				if AttachedEntity then
-					if AdjustMode < 4 then
-						x2 = x1
-						y2 = y1
-						z2 = z1
-						pitch2 = pitch1
-						yaw2 = yaw1
+				local ex2 = ex1
+				local ey2 = ey1
+				local ez2 = ez1
+				local epitch2 = epitch1
+				local eroll2 = eroll1
+				local eyaw2 = eyaw1
 
-						if AdjustMode == 0 then
-							SetEntityCoordsNoOffset(AttachedEntity, ex2 - axisX, ey2, ez2)
-						elseif AdjustMode == 1 then
-							SetEntityCoordsNoOffset(AttachedEntity, ex2, ey2 - axisX, ez2)
-						elseif AdjustMode == 2 then
-							SetEntityCoordsNoOffset(AttachedEntity, ex2, ey2, ez2 - axisY)
-						elseif AdjustMode == 3 then
-							if RotateMode == 0 then
-								SetEntityRotation(AttachedEntity, epitch2 - axisX * Config.SpeedLr, eroll2, eyaw2, 2)
-							elseif RotateMode == 1 then
-								SetEntityRotation(AttachedEntity, epitch2, eroll2 - axisX * Config.SpeedLr, eyaw2, 2)
-							else
-								SetEntityRotation(AttachedEntity, epitch2, eroll2, eyaw2 - axisX * Config.SpeedLr, 2)
-							end
+				local edx1, edy1, edx2, edy2
+
+				if Database[entity] and Database[entity].attachment.to > 0 then
+					edx1 = 0
+					edy1 = AdjustSpeed
+					edx2 = AdjustSpeed
+					edy2 = 0
+				else
+					edx1 = AdjustSpeed * math.sin(r1)
+					edy1 = AdjustSpeed * math.cos(r1)
+					edx2 = AdjustSpeed * math.sin(r2)
+					edy2 = AdjustSpeed * math.cos(r2)
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.RotateLeftControl) then
+					if RotateMode == 0 then
+						epitch2 = epitch2 + RotateSpeed
+					elseif RotateMode == 1 then
+						eroll2 = eroll2 + RotateSpeed
+					else
+						eyaw2 = eyaw2 + RotateSpeed
+					end
+
+					rotChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.RotateRightControl) then
+					if RotateMode == 0 then
+						epitch2 = epitch2 - RotateSpeed
+					elseif RotateMode == 1 then
+						eroll2 = eroll2 - RotateSpeed
+					else
+						eyaw2 = eyaw2 - RotateSpeed
+					end
+
+					rotChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustUpControl) then
+					ez2 = ez2 + AdjustSpeed
+					posChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustDownControl) then
+					ez2 = ez2 - AdjustSpeed
+					posChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustForwardControl) then
+					ex2 = ex2 + edx1
+					ey2 = ey2 + edy1
+					posChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustBackwardControl) then
+					ex2 = ex2 - edx1
+					ey2 = ey2 - edy1
+					posChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustLeftControl) then
+					ex2 = ex2 + edx2
+					ey2 = ey2 + edy2
+					posChanged = true
+				end
+
+				if CheckControls(IsDisabledControlPressed, 0, Config.AdjustRightControl) then
+					ex2 = ex2 - edx2
+					ey2 = ey2 - edy2
+					posChanged = true
+				end
+
+				if AttachedEntity or posChanged or rotChanged then
+					RequestControl(entity)
+
+					if Database[entity] and Database[entity].attachment.to > 0 then
+						AttachEntity(entity,
+							Database[entity].attachment.to,
+							Database[entity].attachment.bone,
+							ex2, ey2, ez2,
+							epitch2, eroll2, eyaw2,
+							Database[entity].attachment.useSoftPinning,
+							Database[entity].attachment.collision,
+							Database[entity].attachment.vertex,
+							Database[entity].attachment.fixedRot)
+					else
+						if posChanged then
+							SetEntityCoordsNoOffset(entity, ex2, ey2, ez2)
 						end
-					elseif AdjustMode == 4 then
-						SetEntityCoordsNoOffset(AttachedEntity, spawnPos.x, spawnPos.y, spawnPos.z)
+
+						if rotChanged then
+							SetEntityRotation(entity, epitch2, eroll2, eyaw2, 2)
+						end
 					end
 
-					if PlaceOnGround or AdjustMode == 4 then
-						PlaceOnGroundProperly(AttachedEntity)
+					if AttachedEntity then
+						if AdjustMode < 4 then
+							x2 = x1
+							y2 = y1
+							z2 = z1
+							pitch2 = pitch1
+							yaw2 = yaw1
+
+							if AdjustMode == 0 then
+								SetEntityCoordsNoOffset(AttachedEntity, ex2 - axisX, ey2, ez2)
+							elseif AdjustMode == 1 then
+								SetEntityCoordsNoOffset(AttachedEntity, ex2, ey2 - axisX, ez2)
+							elseif AdjustMode == 2 then
+								SetEntityCoordsNoOffset(AttachedEntity, ex2, ey2, ez2 - axisY)
+							elseif AdjustMode == 3 then
+								if RotateMode == 0 then
+									SetEntityRotation(AttachedEntity, epitch2 - axisX * Config.SpeedLr, eroll2, eyaw2, 2)
+								elseif RotateMode == 1 then
+									SetEntityRotation(AttachedEntity, epitch2, eroll2 - axisX * Config.SpeedLr, eyaw2, 2)
+								else
+									SetEntityRotation(AttachedEntity, epitch2, eroll2, eyaw2 - axisX * Config.SpeedLr, 2)
+								end
+							end
+						elseif AdjustMode == 4 then
+							SetEntityCoordsNoOffset(AttachedEntity, spawnPos.x, spawnPos.y, spawnPos.z)
+						end
+
+						if PlaceOnGround or AdjustMode == 4 then
+							PlaceOnGroundProperly(AttachedEntity)
+						end
 					end
 				end
+
+				local _, _, z = table.unpack(GetEntityCoords(entity))
+				LastSpawnZ = z
 			end
 		end
 
@@ -4461,6 +4520,7 @@ ObjectRotate = function(entities,heading,origin,angle)
       diffAngle = diffAngle + 360
     end
 	for index, value in ipairs(entities) do
+		if Database[value] and Database[value].isLocked then return end
 		rotation = GetEntityRotation(value,2)
 		coords = GetEntityCoords(value)
 		newCoord = RotateObject(coords.xy,origin.xy, math.rad(diffAngle))
@@ -4473,6 +4533,7 @@ end
 ObjectMove = function(entities,Origin,NewCoords)
     local offset = vector3(0,0,0)
 	for index, value in ipairs(entities) do
+		if Database[value] and Database[value].isLocked then return end
 		print(value)
 		offset = GetEntityCoords(value) - Origin
 		SetEntityCoords(value, NewCoords.x + offset.x, NewCoords.y + offset.y, NewCoords.z + offset.z)
